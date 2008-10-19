@@ -99,6 +99,35 @@ module Rubedo::Controllers
     end
   end
   
+  class Upload < R '/upload'
+    def get
+      if Rubedo.config["upload_allow"] == true
+        render :upload
+      else
+        redirect '/'
+      end
+    end
+    
+    def post
+      if Rubedo.config["upload_allow"] == true && @input.Password.to_s == Rubedo.config["upload_password"]
+        if @input.File == ''
+          @error = "No file selected"
+          render :error
+        elsif File.exists?(File.join(MUSIC_FOLDER, @input.File.filename))
+          @error = "File already exists"
+          render :error
+        else
+          file = @input.File.tempfile.read
+          f = File.new(File.join(MUSIC_FOLDER, @input.File.filename),  "w+")
+          f.puts file
+          redirect '/'
+        end
+      else
+        redirect '/#badpassword'
+      end
+    end
+  end
+  
   class Plays < R '/play/(\d+)/delete'
     # deletes a play from the queue, returns the updated queue partial
     def post(id)
@@ -205,6 +234,11 @@ module Rubedo::Views
       end
       body :onload => "poll();" do
         div :id => "title" do
+          if Rubedo.config["upload_allow"] == true
+          span :style => 'float:right;font-size: 13px;padding-right: 10px;padding-top: 10px;' do
+            a 'upload', :href => R(Upload)
+          end
+          end
           a Rubedo::RADIO_NAME, :href => R(Index)
         end
         div @flash, :id => "flash" if @flash
@@ -212,10 +246,14 @@ module Rubedo::Views
           self << yield
         end
         div :id => "footer" do
-          text "<a href='http://www.thoughtbot.com/projects/rubedo'>Rubedo</a> is powered by <a href='http://code.whytheluckystiff.net/camping' title='(A Microframework)'>Camping</a>. (c) 2008"
+          text "#{Rubedo::RADIO_NAME} is powered by <a href='http://www.thoughtbot.com/projects/rubedo'>Rubedo</a>, <a href='http://code.whytheluckystiff.net/camping' title='(A Microframework)'>Camping</a> and <a href='http://icecast.org/'>IceCast</a>."
         end
       end
     end
+  end
+  
+  def error
+    p "#{@error} !"
   end
   
   def home
@@ -237,6 +275,23 @@ module Rubedo::Views
       _radio
     end
   end
+  
+  def upload
+    p "Hello! Upload a song. (MP3 or OGG)"
+    form :action => "/upload?upload_id=#{Time.now.to_f}", :method => 'post',
+         :enctype => 'multipart/form-data' do
+      p do
+        span "File:"
+        input({:name => "File", :id => "File", :type => 'file'})
+        br
+        span "Password:"
+        input({:name => "Password", :id => "Password", :type => 'text'})
+        br
+        input.newfile! :type => "submit", :value => "Upload !"
+      end
+    end
+  end
+  
   
   def _radio
     div :id => "playing" do
