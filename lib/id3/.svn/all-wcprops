@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 34
+/rubedo/!svn/ver/298/trunk/lib/id3
+END
+id3.rb
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/rubedo/!svn/ver/298/trunk/lib/id3/id3.rb
+END
+artistic-license.html
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/rubedo/!svn/ver/298/trunk/lib/id3/artistic-license.html
+END
+hexdump.rb
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/rubedo/!svn/ver/298/trunk/lib/id3/hexdump.rb
+END
+invert_hash.rb
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/rubedo/!svn/ver/298/trunk/lib/id3/invert_hash.rb
+END

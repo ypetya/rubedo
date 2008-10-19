@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/rubedo/!svn/ver/298/trunk/lib/markaby
+END
+tags.rb
+K 25
+svn:wc:ra_dav:version-url
+V 46
+/rubedo/!svn/ver/298/trunk/lib/markaby/tags.rb
+END
+metaid.rb
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/rubedo/!svn/ver/298/trunk/lib/markaby/metaid.rb
+END
+builder.rb
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/rubedo/!svn/ver/298/trunk/lib/markaby/builder.rb
+END
+cssproxy.rb
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/rubedo/!svn/ver/298/trunk/lib/markaby/cssproxy.rb
+END
+rails.rb
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/rubedo/!svn/ver/298/trunk/lib/markaby/rails.rb
+END
+template.rb
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/rubedo/!svn/ver/298/trunk/lib/markaby/template.rb
+END

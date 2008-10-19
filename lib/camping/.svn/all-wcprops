@@ -1,0 +1,35 @@
+K 25
+svn:wc:ra_dav:version-url
+V 38
+/rubedo/!svn/ver/298/trunk/lib/camping
+END
+reloader.rb
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/rubedo/!svn/ver/298/trunk/lib/camping/reloader.rb
+END
+fastcgi.rb
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/rubedo/!svn/ver/298/trunk/lib/camping/fastcgi.rb
+END
+session.rb
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/rubedo/!svn/ver/298/trunk/lib/camping/session.rb
+END
+db.rb
+K 25
+svn:wc:ra_dav:version-url
+V 44
+/rubedo/!svn/ver/298/trunk/lib/camping/db.rb
+END
+webrick.rb
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/rubedo/!svn/ver/298/trunk/lib/camping/webrick.rb
+END
