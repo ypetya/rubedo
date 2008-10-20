@@ -3,12 +3,10 @@ img {border: 0}
 a {color: #3e5e9a;}
 #title {
   text-align: left; padding-left: 20px;
-  background-color: #e1e7fc;
   font-size: 2.5em; 
   padding-top: 5px;
   padding-bottom: 7px;
   margin-bottom: 10px;
-  border-bottom: 1px solid #3e5e9a;
   font-family: "Palatino Linotype", "Times New Roman", serif;
 } #title a {color: black; text-decoration: none}
 
@@ -52,7 +50,7 @@ a {color: #3e5e9a;}
 #radio #playing div.banner div.now {float: left; padding-top: 10px;}
 #radio #playing div.banner div.links {float: right; padding-top: 11px; padding-right: 0px;}
 #radio #playing div.banner div.links div {float: left}
-#radio #playing div.banner div.links a {font-size: 0.8em; text-decoration: none; color: #2e5eb1;}
+#radio #playing div.banner div.links a {font-size: 0.8em; text-decoration: none;}
 #radio #playing div.banner div.links a:hover {text-decoration: underline}
 #radio #playing div.banner div.links span.left {padding-left: 20px; padding-right: 3px; font-size: 7pt}
 #radio #playing div.banner div.links span.right {padding-right: 10px; padding-left: 3px; font-size: 7pt}
@@ -91,7 +89,5 @@ a {color: #3e5e9a;}
   font-size: 0.7em;
   position: absolute;
   width: 100%;
-  border-top: 1px solid #3e5e9a;
   bottom: 0px;
-  background-color: #e1e7fc;
 }

@@ -193,6 +193,16 @@ module Rubedo::Controllers
     end
   end
   
+  class Style < R '/custom.css'
+    def get
+      @headers['Content-Type'] = 'text/css'
+      "#title { background-color: ##{Rubedo.config[:colors][:head_background]}; border-bottom: 1px solid ##{Rubedo.config[:colors][:head_border]}; color: ##{Rubedo.config[:colors][:head_color]}; }
+      #radio #playing { background-color: ##{Rubedo.config[:colors][:np_background]};}
+      #radio #playing div.banner div.links a { color: ##{Rubedo.config[:colors][:np_link]};}
+      #footer { background-color: color: ##{Rubedo.config[:colors][:footer_background]}; border-top: 1px solid ##{Rubedo.config[:colors][:footer_border]}; color: ##{Rubedo.config[:colors][:footer_color]}; }"
+    end
+  end
+  
   # catch all, make /web folder public
   class Public < R '/([\w\.]+)'
     def get(file)
@@ -216,7 +226,6 @@ module Rubedo::Controllers
       File.read(File.join(WEB_FOLDER, file))
     end
   end
-  
 end
 
 module Rubedo::Views
@@ -233,6 +242,7 @@ module Rubedo::Views
           }
         end
         text "<![endif]-->"
+        link :href => R(Style), :rel => 'stylesheet', :type => 'text/css'
         link :href => R(Public, "favicon.ico"), :rel => 'shortcut icon'
         script :type => "text/javascript", :src => R(Javascript)
         script :type => "text/javascript", :src => "/mootools.js"

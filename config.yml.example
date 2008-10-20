@@ -45,4 +45,14 @@ upload_password: upl0ad
 # Name of the log file the source client (dj.rb) uses.  Leave this blank to disable logging (default).
 dj_log_file: 
 # Name of the log file the frontend (rubedo.rb) uses.  Leave this blank to disable logging (default).
-frontend_log_file: 
+frontend_log_file:
+
+:colors:
+ :head_color:
+ :head_background: e1e7fc
+ :head_border: 3e5e9a
+ :np_background: f6f6fc
+ :np_link: 2e5eb1
+ :footer_background: e1e7fc
+ :footer_border: 3e5e9a
+ :footer_color:
