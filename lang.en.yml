@@ -1,0 +1,30 @@
+:flushing_old_songs: Flushing out old songs, probably won't take long...
+:initializing_database: Initializing database with any new songs, could take a while...
+:error: Error! 
+:songs: Songs
+:find: Find
+:np: Now Playing
+:stream: Stream
+:queued: Queued
+:empty_queue: Empty queue
+:ago:  
+:no_songs: No songs found.
+:upload:
+  :name: upload
+  :message: Welcome! Upload a song (format MP3 or OGG).
+  :no_file_selected: No file.
+  :already_uploaded: This file already exists.
+  :bad_password: Bad Password.
+  :file: File
+  :password: Password
+  :submit: Upload !
+:footer:
+  :powered_by: is powered by
+  :and: and
+:distance:
+  :less_minute: less than a minute ago
+  :one_minute: a minute ago
+  :minutes: minutes ago
+  :one_hour: one hour ago
+  :hours: hours ago
+  :over_a_day: over a day ago

@@ -16,11 +16,15 @@ module Rubedo
     @config ||= YAML::load_file('config.yml')
   end
   
+  def self.strings
+    @strings ||= YAML::load_file("lang.#{self.config['lang']}.yml")
+  end
+  
   def self.create
     Models.create_schema
-    puts "Flushing out old songs, probably won't take long..."
+    puts Rubedo.strings[:flushing_old_songs]
     Helpers.flush_songs
-    puts "Initializing database with any new songs, could take a while..."
+    puts Rubedo.strings[:initializing_database]
     Helpers.scour_songs
     Models::Play.delete_all("queued_at IS NULL")
   end
@@ -111,10 +115,10 @@ module Rubedo::Controllers
     def post
       if Rubedo.config["upload_allow"] == true && @input.Password.to_s == Rubedo.config["upload_password"]
         if @input.File == ''
-          @error = "No file selected"
+          @error = Rubedo.strings[:upload][:no_file_selected]
           render :error
         elsif File.exists?(File.join(MUSIC_FOLDER, @input.File.filename))
-          @error = "File already exists"
+          @error = Rubedo.strings[:upload][:already_uploaded]
           render :error
         else
           file = @input.File.tempfile.read
@@ -123,7 +127,8 @@ module Rubedo::Controllers
           redirect '/'
         end
       else
-        redirect '/#badpassword'
+        @error = Rubedo.strings[:upload][:bad_password]
+        render :error
       end
     end
   end
@@ -236,7 +241,7 @@ module Rubedo::Views
         div :id => "title" do
           if Rubedo.config["upload_allow"] == true
           span :style => 'float:right;font-size: 13px;padding-right: 10px;padding-top: 10px;' do
-            a 'upload', :href => R(Upload)
+            a Rubedo.strings[:upload][:name], :href => R(Upload)
           end
           end
           a Rubedo::RADIO_NAME, :href => R(Index)
@@ -246,23 +251,23 @@ module Rubedo::Views
           self << yield
         end
         div :id => "footer" do
-          text "#{Rubedo::RADIO_NAME} is powered by <a href='http://www.thoughtbot.com/projects/rubedo'>Rubedo</a>, <a href='http://code.whytheluckystiff.net/camping' title='(A Microframework)'>Camping</a> and <a href='http://icecast.org/'>IceCast</a>."
+          text "#{Rubedo::RADIO_NAME} #{Rubedo.strings[:footer][:powered_by]} <a href='http://www.thoughtbot.com/projects/rubedo'>Rubedo</a>, <a href='http://code.whytheluckystiff.net/camping' title='(A Microframework)'>Camping</a> #{Rubedo.strings[:footer][:and]} <a href='http://icecast.org/'>IceCast</a>."
         end
       end
     end
   end
   
   def error
-    p "#{@error} !"
+    p "#{Rubedo.strings[:error]} #{@error} !"
   end
   
   def home
     div :id => "songs" do
       div.header do
-        div.title {text "Songs"}
+        div.title {text Rubedo.strings[:songs]}
         div.search do
           img :id => "spinner", :src => R(Public, "spinner.gif")
-          span "Find"
+          span Rubedo.strings[:find]
           input :type => "text", :size => "15", :onkeyup => "filter();", :id => "search"
         end
       end
@@ -277,17 +282,17 @@ module Rubedo::Views
   end
   
   def upload
-    p "Hello! Upload a song. (MP3 or OGG)"
+    p Rubedo.strings[:upload][:message]
     form :action => "/upload?upload_id=#{Time.now.to_f}", :method => 'post',
          :enctype => 'multipart/form-data' do
       p do
-        span "File:"
+        span Rubedo.strings[:upload][:file]
         input({:name => "File", :id => "File", :type => 'file'})
         br
-        span "Password:"
+        span Rubedo.strings[:upload][:password]
         input({:name => "Password", :id => "Password", :type => 'text'})
         br
-        input.newfile! :type => "submit", :value => "Upload !"
+        input.newfile! :type => "submit", :value => Rubedo.strings[:upload][:submit]
       end
     end
   end
@@ -296,14 +301,14 @@ module Rubedo::Views
   def _radio
     div :id => "playing" do
       div.banner do
-        div.now "Now Playing"
+        div.now Rubedo.strings[:np]
         div.links do
           div do
             _ice
           end
           div.middle do text " &#149; " end
           div do
-            a "Stream", :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
+            a Rubedo.strings[:stream], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
           end
         end
       end
@@ -318,7 +323,7 @@ module Rubedo::Views
   end
   
   def _queue
-    div.queue @next_up.any? ? "Queued" : "Queue is currently empty."
+    div.queue @next_up.any? ? Rubedo.strings[:queued] : Rubedo.strings[:empty_queue]
     div.list do
       @next_up.each_with_index do |play, i|
         cycle = i % 2 == 0 ? 'dark' : 'light'
@@ -328,7 +333,7 @@ module Rubedo::Views
           a.delete :onclick => "unqueue(#{play.id}); return false", :href => "#" do
             img :src => R(Public, "delete.gif")
           end
-          span.queued "#{time_ago(play.queued_at)} ago "
+          span.queued "#{time_ago(play.queued_at)} #{Rubedo.strings[:ago]} "
         end
       end
     end
@@ -356,7 +361,7 @@ module Rubedo::Views
     end
     if @available.empty?
       br
-      span.insufficient "No songs found."
+      span.insufficient Rubedo.strings[:no_songs]
     end
   end
   
@@ -441,12 +446,12 @@ module Rubedo::Helpers
     distance_in_seconds = ((to_time - from_time).abs).round
 
     case distance_in_minutes
-      when 0          then 'less than a minute'
-      when 1          then '1 minute'
-      when 2..45      then "#{distance_in_minutes} minutes"
-      when 46..90     then '1 hour'
-      when 90..1440   then "#{(distance_in_minutes.to_f / 60.0).round} hours"
-      else                 'over a day'
+      when 0          then Rubedo.strings[:distance][:less_minute]
+      when 1          then Rubedo.strings[:distance][:one_minute]
+      when 2..45      then "#{distance_in_minutes} #{Rubedo.strings[:distance][:minutes]}"
+      when 46..90     then Rubedo.strings[:distance][:one_hour]
+      when 90..1440   then "#{(distance_in_minutes.to_f / 60.0).round} #{Rubedo.strings[:distance][:hours]}"
+      else                 Rubedo.strings[:distance][:over_a_day]
     end
   end
   
