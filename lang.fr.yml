@@ -1,14 +1,17 @@
 :flushing_old_songs: Nettoyage des anciennes chansons, patientez...
 :initializing_database: Initialisation de la base de donnée, patientez...
 :error: Erreur! 
-:songs: Chansons
+:songs: Bibliothèque
 :find: Chercher
 :np: A l'écoute
-:stream: Flux
+:stream: flux
 :queued: Liste de lecture
 :empty_queue: Liste de lecture vide
 :ago: ago
 :no_songs: Aucune chanson trouvée.
+:random: random
+:download: télécharger
+:unknow: Inconnu
 :upload:
   :name: envoyer une chanson
   :message: Bienvenue! Envoyez une chanson au format MP3 ou OGG.

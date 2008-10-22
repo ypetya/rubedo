@@ -196,10 +196,7 @@ module Rubedo::Controllers
   class Style < R '/custom.css'
     def get
       @headers['Content-Type'] = 'text/css'
-      "#title { background-color: ##{Rubedo.config[:colors][:head_background]}; border-bottom: 1px solid ##{Rubedo.config[:colors][:head_border]}; color: ##{Rubedo.config[:colors][:head_color]}; }
-      #radio #playing { background-color: ##{Rubedo.config[:colors][:np_background]};}
-      #radio #playing div.banner div.links a { color: ##{Rubedo.config[:colors][:np_link]};}
-      #footer { background-color: color: ##{Rubedo.config[:colors][:footer_background]}; border-top: 1px solid ##{Rubedo.config[:colors][:footer_border]}; color: ##{Rubedo.config[:colors][:footer_color]}; }"
+ "a:hover{color:#{Rubedo.config[:colors][:color]};background-color:#{Rubedo.config[:colors][:background]};}#head{background-color:#{Rubedo.config[:colors][:background]};}#head .links a:hover {color:#{Rubedo.config[:colors][:background]};}h2 {color:#{Rubedo.config[:colors][:background]};}"
     end
   end
   
@@ -248,20 +245,18 @@ module Rubedo::Views
         script :type => "text/javascript", :src => "/mootools.js"
       end
       body :onload => "poll();" do
-        div :id => "title" do
+        div :id => "head" do
           if Rubedo.config["upload_allow"] == true
-          span :style => 'float:right;font-size: 13px;padding-right: 10px;padding-top: 10px;' do
+          span :class => 'links' do
+            a Rubedo.strings[:stream], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
             a Rubedo.strings[:upload][:name], :href => R(Upload)
           end
           end
-          a Rubedo::RADIO_NAME, :href => R(Index)
+          h1 Rubedo::RADIO_NAME
         end
-        div @flash, :id => "flash" if @flash
-        div :id => "main" do
-          self << yield
-        end
+        self << yield
         div :id => "footer" do
-          text "#{Rubedo::RADIO_NAME} #{Rubedo.strings[:footer][:powered_by]} <a href='http://www.thoughtbot.com/projects/rubedo'>Rubedo</a>, <a href='http://code.whytheluckystiff.net/camping' title='(A Microframework)'>Camping</a> #{Rubedo.strings[:footer][:and]} <a href='http://icecast.org/'>IceCast</a>."
+          text "<strong>#{Rubedo::RADIO_NAME}</strong> #{Rubedo.strings[:footer][:powered_by]} <a href='http://www.thoughtbot.com/projects/rubedo'>Rubedo</a>, <a href='http://code.whytheluckystiff.net/camping' title='(A Microframework)'>Camping</a> #{Rubedo.strings[:footer][:and]} <a href='http://icecast.org/'>IceCast</a>. &mdash; #{Rubedo.config[:email]}"
         end
       end
     end
@@ -272,21 +267,30 @@ module Rubedo::Views
   end
   
   def home
-    div :id => "songs" do
+    div :id => "np" do
+      _ice
+      span :id => "now_playing" do 
+        _now_playing
+      end
+    end
+    
+    div :id => "library" do
       div.header do
-        div.title {text Rubedo.strings[:songs]}
         div.search do
           img :id => "spinner", :src => R(Public, "spinner.gif")
           span Rubedo.strings[:find]
           input :type => "text", :size => "15", :onkeyup => "filter();", :id => "search"
         end
+        h4 {text Rubedo.strings[:songs]}
       end
+      
       div :id => "available" do
         _available
       end
     end
     
-    div :id => "radio" do
+    div :id => "playlist" do
+      h4 "Playlist"
       _radio
     end
   end
@@ -308,66 +312,59 @@ module Rubedo::Views
   end
   
   
-  def _radio
-    div :id => "playing" do
-      div.banner do
-        div.now Rubedo.strings[:np]
-        div.links do
-          div do
-            _ice
-          end
-          div.middle do text " &#149; " end
-          div do
-            a Rubedo.strings[:stream], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
-          end
-        end
-      end
-      div :id => 'now_playing' do 
-        _now_playing
-      end
-    end
-  
+  def _radio  
     div :id => "queue" do
       _queue
     end
   end
   
   def _queue
-    div.queue @next_up.any? ? Rubedo.strings[:queued] : Rubedo.strings[:empty_queue]
-    div.list do
+    p Rubedo.strings[:empty_queue] unless @next_up.any?
+    ul do
       @next_up.each_with_index do |play, i|
-        cycle = i % 2 == 0 ? 'dark' : 'light'
-        format = File.extname(play[:filename]) == ".ogg" ? "ogg" : "mp3"
-        div :class => "queued #{cycle} #{format}" do
-          span.title truncate("#{play.title}", 65)
+        li do
+          text play.title
+          text "&nbsp;"
+          span.grey "#{time_ago(play.queued_at)} "
           a.delete :onclick => "unqueue(#{play.id}); return false", :href => "#" do
             img :src => R(Public, "delete.gif")
           end
-          span.queued "#{time_ago(play.queued_at)} #{Rubedo.strings[:ago]} "
         end
+        cycle = i % 2 == 0 ? 'dark' : 'light'
       end
     end
   end
   
   def _now_playing
+    text " "
     if @now_playing
       if Rubedo.config["allow_download"]
-        a @now_playing.title, :href => R(Download, @now_playing.filename)
+        span Rubedo.strings[:np]
+        text ": "
+        h2 @now_playing.title
+        text " "
+        a Rubedo.strings[:download], :href => R(Download, @now_playing.filename), :class => 'button'
       else
-        a @now_playing.title
+        h2 @now_playing.title
       end
     else
-      text "&nbsp;"
+      span Rubedo.strings[:np]
+      text ": "
+      h2 Rubedo.strings[:unknow]
+      text " "
+      div :class => 'button red' do
+        text Rubedo.strings[:random]
+      end
     end
   end
   
   def _available
+    ul do 
     @available.each_with_index do |song, i|
-      cycle = i % 2 == 0 ? 'dark' : 'light'
-      format = File.extname(song[:filename]) == ".ogg" ? "ogg" : "mp3"
-      div :class => "song #{cycle} #{format}" do
-        a song[:title], :onclick => "queue('#{song.id}'); return false", :href => "#"
+      li :onclick => "queue('#{song.id}'); return false" do
+        song[:title]
       end
+    end
     end
     if @available.empty?
       br

@@ -47,12 +47,9 @@ dj_log_file:
 # Name of the log file the frontend (rubedo.rb) uses.  Leave this blank to disable logging (default).
 frontend_log_file:
 
+
+:email: abuse@riaa.com
+
 :colors:
- :head_color:
- :head_background: e1e7fc
- :head_border: 3e5e9a
- :np_background: f6f6fc
- :np_link: 2e5eb1
- :footer_background: e1e7fc
- :footer_border: 3e5e9a
- :footer_color:
+ :background: 504123
+ :color: D4CB5F

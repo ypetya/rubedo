@@ -4,11 +4,14 @@
 :songs: Songs
 :find: Find
 :np: Now Playing
-:stream: Stream
+:stream: stream
 :queued: Queued
 :empty_queue: Empty queue
 :ago:  
 :no_songs: No songs found.
+:random: random
+:download: download
+:unknow: Unknow
 :upload:
   :name: upload
   :message: Welcome! Upload a song (format MP3 or OGG).
