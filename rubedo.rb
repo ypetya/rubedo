@@ -15,11 +15,11 @@ module Rubedo
   def self.config
     @config ||= YAML::load_file('config.yml')
   end
-  
+
   def self.strings
     @strings ||= YAML::load_file("lang.#{self.config['lang']}.yml")
   end
-  
+
   def self.create
     Models.create_schema
     puts Rubedo.strings[:flushing_old_songs]
@@ -28,11 +28,11 @@ module Rubedo
     Helpers.scour_songs
     Models::Play.delete_all("queued_at IS NULL")
   end
-  
+
   WEB_FOLDER = File.join(File.expand_path(File.dirname(__FILE__)), "web")
   LOG_FOLDER = File.join(File.expand_path(File.dirname(__FILE__)), "log")
   DB_FOLDER = File.join(File.expand_path(File.dirname(__FILE__)), "db")
-  
+
   MUSIC_FOLDER = File.exists?(config["music_folder"]) ? config["music_folder"] : "./music"
   RADIO_NAME = config["radio_name"]
   PUBLIC_STREAM_SUFFIX = ":#{config['icecast']['port']}#{config['icecast']['mount']}"
@@ -41,7 +41,7 @@ end
 module Rubedo::Models
   class Song < Base
     validates_presence_of :filename, :title
-    
+
     def self.available(filter = nil)
       if filter.blank?
         Song.find :all, :order => "upper(title) asc"
@@ -50,7 +50,7 @@ module Rubedo::Models
       end
     end
   end
-  
+
   class Play < Base
     belongs_to :song
     validates_presence_of :filename, :title
@@ -84,25 +84,25 @@ module Rubedo::Controllers
     def get
       # scour songs every time someone visits the index
       Rubedo::Helpers.scour_songs
-    
+
       (@now_playing, @next_up) = [Play.now_playing, Play.next_up]
       @available = Song.available
       render :home
     end
   end
-  
+
   class Songs < R '/song/(\d+)'
     # Queues a song, and returns the updated queue partial
     def post(id)
       if @song = Song.find_by_id(id)
         Play.create(:song => @song, :filename => @song.filename, :title => @song.title, :queued_at => Time.now)
       end
-      
+
       @next_up = Play.next_up
       render :_queue
     end
   end
-  
+
   class Upload < R '/upload'
     def get
       if Rubedo.config["upload_allow"] == true
@@ -111,7 +111,7 @@ module Rubedo::Controllers
         redirect '/'
       end
     end
-    
+
     def post
       if Rubedo.config["upload_allow"] == true && @input.Password.to_s == Rubedo.config["upload_password"]
         if @input.File == ''
@@ -132,19 +132,19 @@ module Rubedo::Controllers
       end
     end
   end
-  
+
   class Plays < R '/play/(\d+)/delete'
     # deletes a play from the queue, returns the updated queue partial
     def post(id)
       if @play = Play.find_by_id(id)
         @play.destroy
       end
-      
+
       @next_up = Play.next_up
       render :_queue
     end
   end
-  
+
   # Partial feeder
   class Partial < R '/partial/(\w+)'
     def get(partial)
@@ -165,7 +165,7 @@ module Rubedo::Controllers
       end
     end
   end
-  
+
   # Sends a song directly from the music directory
   # Will only work if the song is currently playing
   class Download < R '/download/(.*)'
@@ -184,7 +184,7 @@ module Rubedo::Controllers
       end
     end
   end
-  
+
   # All Rubedo-specific Javascript is contained at the bottom of this file
   class Javascript < R '/rubedo.js'
     def get
@@ -192,19 +192,19 @@ module Rubedo::Controllers
       File.read(__FILE__).gsub(/.*__END__/m, '')
     end
   end
-  
+
   class Style < R '/custom.css'
     def get
       @headers['Content-Type'] = 'text/css'
  "a:hover{color:#{Rubedo.config[:colors][:color]};background-color:#{Rubedo.config[:colors][:background]};}#head{background-color:#{Rubedo.config[:colors][:background]};}#head .links a:hover {color:#{Rubedo.config[:colors][:background]};}h2 {color:#{Rubedo.config[:colors][:background]};}"
     end
   end
-  
+
   # catch all, make /web folder public
   class Public < R '/([\w\.]+)'
     def get(file)
       redirect Index unless File.exists?(File.join(WEB_FOLDER, file))
-      
+
       case File.extname(file)
       when ".js"
         @headers['Content-Type'] = 'text/javascript'
@@ -261,19 +261,19 @@ module Rubedo::Views
       end
     end
   end
-  
+
   def error
     p "#{Rubedo.strings[:error]} #{@error} !"
   end
-  
+
   def home
     div :id => "np" do
       _ice
-      span :id => "now_playing" do 
+      span :id => "now_playing" do
         _now_playing
       end
     end
-    
+
     div :id => "library" do
       div.header do
         div.search do
@@ -283,18 +283,18 @@ module Rubedo::Views
         end
         h4 {text Rubedo.strings[:songs]}
       end
-      
+
       div :id => "available" do
         _available
       end
     end
-    
+
     div :id => "playlist" do
       h4 "Playlist"
       _radio
     end
   end
-  
+
   def upload
     p Rubedo.strings[:upload][:message]
     form :action => "/upload?upload_id=#{Time.now.to_f}", :method => 'post',
@@ -310,14 +310,14 @@ module Rubedo::Views
       end
     end
   end
-  
-  
-  def _radio  
+
+
+  def _radio
     div :id => "queue" do
       _queue
     end
   end
-  
+
   def _queue
     p Rubedo.strings[:empty_queue] unless @next_up.any?
     ul do
@@ -334,7 +334,7 @@ module Rubedo::Views
       end
     end
   end
-  
+
   def _now_playing
     text " "
     if @now_playing
@@ -357,9 +357,9 @@ module Rubedo::Views
       end
     end
   end
-  
+
   def _available
-    ul do 
+    ul do
     @available.each_with_index do |song, i|
       li :onclick => "queue('#{song.id}'); return false" do
         song[:title]
@@ -371,20 +371,20 @@ module Rubedo::Views
       span.insufficient Rubedo.strings[:no_songs]
     end
   end
-  
+
   def _ice
     object :width => "20", :height => "19", :data => "ice.swf?StreamURL=http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}", :type => "application/x-shockwave-flash" do
       param :name => "src", :value => "ice.swf?StreamURL=http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
     end
   end
-  
+
 end
 
 module Rubedo::Helpers
   # Find any songs in the music directory that Rubedo doesn't know about and add them to the table
   def self.scour_songs
     # Do one database query now and make a hash, to keep this function O(n)
-    songs = Rubedo::Models::Song.find(:all).inject({}) do |files, song| 
+    songs = Rubedo::Models::Song.find(:all).inject({}) do |files, song|
       files[song.filename] = 1
       files
     end
@@ -395,14 +395,14 @@ module Rubedo::Helpers
         begin
           Rubedo::Models::Song.create(:title => song_title(filename), :filename => filename)
           puts "Added #{filename} to database."
-        rescue 
+        rescue
           puts "Error adding #{filename} to database, moving on."
         end
       end
     end
     Dir.chdir wd
   end
-  
+
   # Delete any entries in the database which refer to songs which have been removed from the music folder
   def self.flush_songs
     songs = Rubedo::Models::Song.find(:all)
@@ -410,7 +410,7 @@ module Rubedo::Helpers
       unless File.exists?(File.join(Rubedo::MUSIC_FOLDER, song.filename))
         song.destroy
         Rubedo::Models::Play.find(:all, :conditions => ["song_id = ?", song.id]).each {|play| play.destroy}
-        
+
         puts "Flushed #{song.filename} from database."
       end
     end
@@ -422,9 +422,9 @@ module Rubedo::Helpers
     unless path.match(/\.mp3$/)
       return File.basename(path, File.extname(path)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
     end
-    
+
     m = ID3::AudioFile.new(path)
-    
+
     title, artist, song_title = [nil] * 3
     if m.tagID3v2 and m.tagID3v2.any?
       if m.tagID3v2["ARTIST"] and m.tagID3v2["ARTIST"]["encoding"] and m.tagID3v2["ARTIST"]["encoding"] == 0
@@ -439,13 +439,13 @@ module Rubedo::Helpers
       song_title = m.tagID3v1["TITLE"] if m.tagID3v1["TITLE"]
     end
     title = "#{artist} - #{song_title}" if artist and song_title
-    
+
     # Fall back on the filename with the extension stripped, and any leading numbers/punctuation stripped
     title ||= File.basename(path, File.extname(path)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
-    
+
     title
   end
-  
+
   # This is a much stripped down version of ActionView's time_ago_in_words, credit goes solidly to David Heinemeier Hanssen.
   def time_ago(from_time)
     to_time = Time.now
@@ -461,7 +461,7 @@ module Rubedo::Helpers
       else                 Rubedo.strings[:distance][:over_a_day]
     end
   end
-  
+
   # Also stolen from ActionView.
   def truncate(text, length = 30, truncate_string = "...")
     if text.nil? then return end
@@ -472,20 +472,20 @@ end
 
 # This code will be run if rubedo is run using "ruby rubedo.rb", but not when run using "camping rubedo.rb"
 if __FILE__ == $0
-  
+
   config = Rubedo.config
-  
+
   config["frontend_port"] ||= 80
   config["start_source_client"] = true if config["start_source_client"].nil?
-  
+
   FileUtils.mkdir_p(Rubedo::LOG_FOLDER)
   FileUtils.mkdir_p(Rubedo::DB_FOLDER)
-  
+
   Rubedo::Models::Base.establish_connection :adapter  => "sqlite3", :database => File.join(Rubedo::DB_FOLDER, "rubedo.db"), :timeout => 200
   Rubedo::Models::Base.logger = Logger.new(File.join(Rubedo::LOG_FOLDER, config["frontend_log_file"])) unless config["frontend_log_file"].blank?
-  
+
   Rubedo.create
-  
+
   server_type = nil
   server = nil
   begin
@@ -495,16 +495,16 @@ if __FILE__ == $0
     #server = Mongrel::Camping::start("0.0.0.0", config["frontend_port"], "/", Rubedo)
     server = Mongrel::HttpServer.new("0.0.0.0", config["frontend_port"])
     server.register("/", Mongrel::Camping::CampingHandler.new(Rubedo))
-    
+
     puts "** Rubedo is running at http://localhost:#{config['frontend_port']}"
-  rescue LoadError 
+  rescue LoadError
     require 'webrick/httpserver'
     require 'camping/webrick'
     server_type = :webrick
     server = WEBrick::HTTPServer.new :BindAddress => "0.0.0.0", :Port => config["frontend_port"]
     server.mount "/", WEBrick::CampingHandler, Rubedo
-  end  
-  
+  end
+
   dj = nil
   if config["start_source_client"]
     # Spawn the source client process on its own
@@ -513,17 +513,20 @@ if __FILE__ == $0
       DJ.new.start
     end
   end
-  
+
   if server_type == :mongrel
     [:INT, :TERM].each {|sig| trap(sig) {server.stop}}
     server.run.join
   elsif server_type == :webrick
     [:INT, :TERM].each {|sig| trap(sig) {server.shutdown}}
-    server.start  
+    server.start
   end
-  
+
   # kill source client upon exit if we are tied to it
   Process.kill("KILL", dj) if dj
+
+else  # if we are running  via passenger
+  Camping::Models::Base.establish_connection( :adapter => 'sqlite3', :database => 'db/rubedo.db')
 end
 
 __END__
@@ -536,9 +539,9 @@ function unqueue(id) {var res = new Ajax('/play/' + id + '/delete', {update: 'qu
 
 function filter() {
   search = $("search");
-  if (search.zid) 
+  if (search.zid)
     clearTimeout(search.zid);
-  
+
   if (last_search != search.value) {
     search.zid = setTimeout(function() {
       $('spinner').style.display = "inline";
