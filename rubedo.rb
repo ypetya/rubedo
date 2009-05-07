@@ -121,6 +121,7 @@ module Rubedo::Controllers
           @error = Rubedo.strings[:upload][:already_uploaded]
           render :error
         else
+					
           file = @input.File.tempfile.read
           f = File.new(File.join(MUSIC_FOLDER, @input.File.filename),  "w+")
           f.puts file

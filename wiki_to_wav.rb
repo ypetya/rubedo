@@ -22,7 +22,7 @@ FILENAME = 'wikipedia.txt'
 #SPEAK_COMMAND = ARGV.size > 1 ? "aoss espeak -p 78 -v #{ARGV[1]} -s 150 -a 99 -f": 'aoss espeak -p 78 -v hu+f2 -s 150 -a 99 -f'
 MAX_COUNTER = ARGV.size > 0 ? ARGV[0].to_i : 10
 
-SPEAK_COMMAND = 'aoss espeak -p 78 -v hu+f2 -s 150 -a 99 -w /tmp/wiki_wav/TMPFILENAME.wav -f'
+SPEAK_COMMAND = "aoss espeak -p 78 -v hu+f2 -s 150 -a 99 -w '/tmp/wiki_wav/TMPFILENAME.wav' -f"
 
 
 TABLAZAT_LIMIT = 800
@@ -192,7 +192,11 @@ def hunt_for_wiki_image_in links, agent
 end
 
 def generate_filename counter
-  SPEAK_COMMAND.gsub(/TMPFILENAME/){ counter }
+  SPEAK_COMMAND.gsub(/TMPFILENAME/) do 
+		['"',"'",' '].each do |c| 
+			counter = counter.gsub(/#{c}/){''}
+		end
+	end
 end
 
 #make a new mechanize user agent

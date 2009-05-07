@@ -6,21 +6,30 @@
 
 require 'rubygems'
 
-KEEP_FILE_COUNT = 5
+KEEP_FILE_COUNT = 10
 
 GENERATE_WAV = 'wiki_to_wav.rb 3'
 GENERATE_MP3 = 'lame *.wav'
 
-system('mkdir /tmp/wiki_wav -pf')
-system('mkdir /tmp/wiki_mp3 -pf')
+system('mkdir /tmp/wiki_wav -p')
+system('mkdir /tmp/wiki_mp3 -p')
 
 # exit if keep_limit is ok
 
-while %x{ls /tmp/wiki_mp3 -la | wc -L}.to_i < KEEP_FILE_COUNT do
+#failsafe :)
+Dir["/tmp/wiki_wav/*.wav"].each do |file|
+	system("lame #{file} #{file.gsub(/wav/){'mp3'}} --quiet")
+	system("rm #{file}")
+	print '+'
+end
+
+while Dir["/tmp/wiki_mp3/*.mp3"].size < KEEP_FILE_COUNT do
   system( GENERATE_WAV )
 	Dir["/tmp/wiki_wav/*.wav"].each do |file|
-		system("lame /tmp/wiki_wav/#{file} /tmp/wiki_mp3/#{file.gsub(/wav/){'mp3'}}")
-		system("rm /tmp/wiki_wav/#{file}")
-		puts '.'
+		system("lame #{file} #{file.gsub(/wav/){'mp3'}} --quiet")
+		system("rm #{file}")
+		print '.'
 	end
 end
+
+puts 'generate _ok'
