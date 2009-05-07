@@ -63,7 +63,7 @@ class DJ
       else
 				song = random_song
         play(song, File.join('/tmp/wiki_mp3',song[1]))
-				system("rm #{random_song}")
+				system("rm #{song[1]} -f")
       end
     end
   end
