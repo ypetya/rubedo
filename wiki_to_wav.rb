@@ -151,7 +151,7 @@ def parse_node f, node, depth=0
   end
 end
 
-load '/etc/my_ruby_scripts/settings.rb'
+#load '/etc/my_ruby_scripts/settings.rb'
 BLOG_NAME = 'csakacsuda'
 
 def push_to_freeblog email,password,message
