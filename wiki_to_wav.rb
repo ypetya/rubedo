@@ -223,8 +223,9 @@ while i > 0
     oldal = agent.get PAGE
   end
   #grab images :)
-  hunt_for_wiki_image_in oldal.links,agent
-  #write to file and parse content
+  #hunt_for_wiki_image_in oldal.links,agent
+  
+	#write to file and parse content
   File.open("#{DIR}/#{FILENAME}",'w') do |f|
     #Kategória
     if cat = (oldal/"#bodyContent/div#catlinks")
