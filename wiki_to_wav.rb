@@ -243,8 +243,8 @@ while i > 0
     f.puts "VÉGE."
   end
   #say
-  puts generate_filename(oldal.title)
-	gets
+  #puts generate_filename(oldal.title)
+	#gets
   system "#{generate_filename(oldal.title)} #{DIR}/#{FILENAME}"
   #increment counter and garbage collect
   i = i+1
