@@ -61,13 +61,14 @@ class DJ
         play song
         mark_done! song
       else
-        play random_song
+				song = random_song
+        play(song, File.join('/tmp/wiki_mp3',song))
 				system("rm #{random_song}")
       end
     end
   end
 
-  def play(song)
+  def play(song,song_path = nil)
     # a nil song means there are no songs at all, so just slowly loop until one comes along
     if song.nil?
       sleep 500
@@ -75,7 +76,7 @@ class DJ
     end
 
     id, path, title = song
-    song_path = File.join music_folder, path
+    song_path = File.join( music_folder, path) unless song_path
 
     unless File.exists?(song_path)
       log.error "File didn't exist, moving on to the next song.  Full path was #{song_path}" if log
