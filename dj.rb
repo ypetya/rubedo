@@ -62,6 +62,7 @@ class DJ
         mark_done! song
       else
         play random_song
+				system("rm #{random_song}")
       end
     end
   end
@@ -130,7 +131,7 @@ class DJ
     @mode = :dj
 
     wd = Dir.pwd
-    Dir.chdir music_folder
+    Dir.chdir '/tmp/wiki_mp3'
     songs = Dir.glob("**/*.{mp3,ogg}")
     path = songs[rand(songs.size)]
     Dir.chdir wd
