@@ -293,11 +293,6 @@ module Rubedo::Views
       h4 "Playlist"
       _radio
     end
-
-		div :id => 'chat' do
-			h4 'Chat'
-			iframe :src => 'http://widget.mibbit.com/?settings=17d8f81bf0086da47ae82b96d2aa93c1&server=irc.freenode.net&channel=uzeno_falatok&noServerNotices=true&noServerMotd=true&autoConnect=true' 
-		end
   end
 
   def upload
