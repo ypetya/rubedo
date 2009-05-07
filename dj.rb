@@ -62,7 +62,7 @@ class DJ
         mark_done! song
       else
 				song = random_song
-        play(song, File.join('/tmp/wiki_mp3',song))
+        play(song, File.join('/tmp/wiki_mp3',song[1]))
 				system("rm #{random_song}")
       end
     end
@@ -76,7 +76,7 @@ class DJ
     end
 
     id, path, title = song
-    song_path = File.join( music_folder, path) unless song_path
+    song_path ||= File.join( music_folder, path)
 
     unless File.exists?(song_path)
       log.error "File didn't exist, moving on to the next song.  Full path was #{song_path}" if log
