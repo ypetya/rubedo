@@ -196,6 +196,7 @@ def generate_filename counter
 		['"',"'",' '].each do |c| 
 			counter = counter.gsub(/#{c}/){''}
 		end
+		counter
 	end
 end
 

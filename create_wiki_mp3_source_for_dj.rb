@@ -18,16 +18,16 @@ system('mkdir /tmp/wiki_mp3 -p')
 
 #failsafe :)
 Dir["/tmp/wiki_wav/*.wav"].each do |file|
-	system("lame #{file} #{file.gsub(/wav/){'mp3'}} --quiet")
-	system("rm #{file}")
+	system("lame '#{file}' '#{file.gsub(/wav/){'mp3'}}' --quiet")
+	system("rm '#{file}'")
 	print '+'
 end
 
 while Dir["/tmp/wiki_mp3/*.mp3"].size < KEEP_FILE_COUNT do
   system( GENERATE_WAV )
 	Dir["/tmp/wiki_wav/*.wav"].each do |file|
-		system("lame #{file} #{file.gsub(/wav/){'mp3'}} --quiet")
-		system("rm #{file}")
+		system("lame '#{file}' '#{file.gsub(/wav/){'mp3'}}' --quiet")
+		system("rm '#{file}'")
 		print '.'
 	end
 end
