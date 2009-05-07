@@ -19,10 +19,10 @@ PAGE = nil #ARGV.size > 0 ? ARGV[0] : nil
 DIR = "/home/#{ENV['USER']}"
 FILENAME = 'wikipedia.txt'
 
-#SPEAK_COMMAND = ARGV.size > 1 ? "aoss espeak -p 78 -v #{ARGV[1]} -s 150 -a 99 -f": 'aoss espeak -p 78 -v hu+f2 -s 150 -a 99 -f'
+#SPEAK_COMMAND = ARGV.size > 1 ? "espeak -p 78 -v #{ARGV[1]} -s 150 -a 99 -f": 'aoss espeak -p 78 -v hu+f2 -s 150 -a 99 -f'
 MAX_COUNTER = ARGV.size > 0 ? ARGV[0].to_i : 10
 
-SPEAK_COMMAND = "aoss espeak -p 78 -v hu+f2 -s 150 -a 99 -w /tmp/wiki_wav/TMPFILENAME.wav -f"
+SPEAK_COMMAND = "espeak -p 78 -v hu+f2 -s 150 -a 99 -w /tmp/wiki_wav/TMPFILENAME.wav -f"
 
 
 TABLAZAT_LIMIT = 800

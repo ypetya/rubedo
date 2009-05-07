@@ -8,7 +8,7 @@ require 'rubygems'
 
 KEEP_FILE_COUNT = 10
 
-GENERATE_WAV = 'wiki_to_wav.rb 3'
+GENERATE_WAV = './wiki_to_wav.rb 3'
 GENERATE_MP3 = 'lame *.wav'
 
 system('mkdir /tmp/wiki_wav -p')
