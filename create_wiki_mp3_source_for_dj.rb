@@ -8,7 +8,7 @@ require 'rubygems'
 
 KEEP_FILE_COUNT = 10
 
-GENERATE_WAV = './wiki_to_wav.rb 3'
+GENERATE_WAV = File.join(File.dirname(__FILE__),'wiki_to_wav.rb 3')
 SAFETY_COUNTER = 4
 
 system('mkdir /tmp/wiki_wav -p')
@@ -18,7 +18,7 @@ system('mkdir /tmp/wiki_mp3 -p')
 
 #failsafe :)
 Dir["/tmp/wiki_wav/*.wav"].each do |file|
-	system("lame '#{file}' '#{file.gsub(/wav/){'mp3'}}' --quiet")
+	system("lame '#{file}' '#{file.gsub(/wav/){'mp3'}}' --quiet -b 128")
 	system("rm '#{file}' -f")
 	print '+'
 end
@@ -27,7 +27,7 @@ i = 0
 while((Dir["/tmp/wiki_mp3/*.mp3"].size < KEEP_FILE_COUNT) and i < SAFETY_COUNTER) do
   system( GENERATE_WAV )
 	Dir["/tmp/wiki_wav/*.wav"].each do |file|
-		system("lame '#{file}' '#{file.gsub(/wav/){'mp3'}}' --quiet")
+		system("lame '#{file}' '#{file.gsub(/wav/){'mp3'}}' --quiet -b 128")
 		system("rm '#{file}' -f")
 		print '.'
 	end

@@ -16,7 +16,7 @@ require 'mechanize'
 
 PAGE = nil #ARGV.size > 0 ? ARGV[0] : nil
 # temporary file data
-DIR = "/home/#{ENV['USER']}"
+DIR = "/tmp"
 FILENAME = 'wikipedia.txt'
 
 #SPEAK_COMMAND = ARGV.size > 1 ? "espeak -p 78 -v #{ARGV[1]} -s 150 -a 99 -f": 'aoss espeak -p 78 -v hu+f2 -s 150 -a 99 -f'
