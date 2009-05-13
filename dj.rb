@@ -62,8 +62,8 @@ class DJ
         mark_done! song
       else
 				song = random_song
-        play(song, File.join('/tmp/wiki_mp3',song[1]))
-        system("rm '#{File.join('/tmp/wiki_mp3',song[1])}' -f")
+        play(song, song[1])
+        system("rm '#{song[1]}' -f") if song[1] =~ /wiki_mp3/
       end
     end
   end
@@ -93,6 +93,7 @@ class DJ
     else
       format = Shout::MP3
     end
+
     if format != @shout.format
       log.info "Switching stream formats, re-connecting." if log
       @shout.disconnect
@@ -131,11 +132,10 @@ class DJ
   def random_song
     @mode = :dj
 
-    wd = Dir.pwd
-    Dir.chdir '/tmp/wiki_mp3'
-    songs = Dir.glob("**/*.{mp3,ogg}")
+    songs = Dir["/tmp/wiki_mp3/**/*.{mp3,ogg}"]
+    songs = Dir["#{music_folder}**/*.{mp3,ogg}"] if songs.empty?
+    
     path = songs[rand(songs.size)]
-    Dir.chdir wd
 
     if not path or path.empty?
       nil
