@@ -6,30 +6,56 @@
 
 require 'rubygems'
 
+# we need to ...
 KEEP_FILE_COUNT = 10
-
+# how to ...
 GENERATE_WAV = File.join(File.dirname(__FILE__),'wiki_to_wav.rb 3')
+# keep a safe loop count
 SAFETY_COUNTER = 4
 
-system('mkdir /tmp/wiki_wav -p')
-system('mkdir /tmp/wiki_mp3 -p')
+# create directories
+%w{wav tmp mp3}.each do |ext|
+  system("mkdir /tmp/wiki_#{ext} -p")
+end
+
+def encode_to_mp3 file_path
+  # we encode to a temporary path not to broke the streaming
+  tmp_file = "#{file_path.gsub(/wav/){'tmp'}}.mp3"
+
+  # with ffmpeg becouse to create 2 channels
+  system("ffmpeg -i '#{file_path}' -acodec ac3 -ac 2 '#{tmp_file}'")
+
+  # and put the mp3 to the corret place
+  system("mv '#{tmp_file}' '#{file_path.gsub(/wav/){'mp3'}}'")
+
+end
+
+def rm file
+  system("rm '#{file}' -f")
+end
 
 # exit if keep_limit is ok
 
-#failsafe :)
+# are there some wav garbage??
 Dir["/tmp/wiki_wav/*.wav"].each do |file|
-	system("lame '#{file}' '#{file.gsub(/wav/){'mp3'}}' --quiet -b 128 --resample 44.1")
-	system("rm '#{file}' -f")
-	print '+'
+  
+  encode_to_mp3 file
+
+  rm file
+
+  print '+'
 end
 
 i = 0
 while((Dir["/tmp/wiki_mp3/*.mp3"].size < KEEP_FILE_COUNT) and i < SAFETY_COUNTER) do
   system( GENERATE_WAV )
 	Dir["/tmp/wiki_wav/*.wav"].each do |file|
-		system("lame '#{file}' '#{file.gsub(/wav/){'mp3'}}' --quiet -b 128 --resample 44.1")
-		system("rm '#{file}' -f")
-		print '.'
+    
+    encode_to_mp3 file
+
+    rm file
+		
+    print '.'
 	end
   i += 1
 end
