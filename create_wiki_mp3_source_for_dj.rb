@@ -49,14 +49,14 @@ end
 i = 0
 while((Dir["/tmp/wiki_mp3/*.mp3"].size < KEEP_FILE_COUNT) and i < SAFETY_COUNTER) do
   system( GENERATE_WAV )
-	Dir["/tmp/wiki_wav/*.wav"].each do |file|
+  Dir["/tmp/wiki_wav/*.wav"].each do |file|
     
     encode_to_mp3 file
-
+    
     rm file
-		
+    
     print '.'
-	end
+  end
   i += 1
 end
 
