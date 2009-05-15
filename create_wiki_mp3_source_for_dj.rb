@@ -23,7 +23,7 @@ def encode_to_mp3 file_path
   tmp_file = "#{file_path.gsub(/wav/){'tmp'}}.mp3"
 
   # with ffmpeg becouse to create 2 channels
-  system("ffmpeg -i '#{file_path}' -acodec ac3 -ac 2 '#{tmp_file}'")
+  system("ffmpeg -i '#{file_path}' -ac 2 '#{tmp_file}'")
 
   # and put the mp3 to the corret place
   system("mv '#{tmp_file}' '#{file_path.gsub(/wav/){'mp3'}}'")
