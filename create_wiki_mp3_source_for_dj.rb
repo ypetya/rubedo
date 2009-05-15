@@ -18,20 +18,29 @@ SAFETY_COUNTER = 4
   system("mkdir /tmp/wiki_#{ext} -p")
 end
 
-def encode_to_mp3 file_path
-  # we encode to a temporary path not to broke the streaming
-  tmp_file = "#{file_path.gsub(/wav/){'tmp'}}.mp3"
-
-  # with ffmpeg becouse to create 2 channels
-  system("ffmpeg -i '#{file_path}' -ac 2 '#{tmp_file}'")
-
-  # and put the mp3 to the corret place
-  system("mv '#{tmp_file}' '#{file_path.gsub(/wav/){'mp3'}}'")
-
-end
-
 def rm file
   system("rm '#{file}' -f")
+end
+
+def encode_to_mp3 file_path
+  
+  # we encode to a temporary path not to broke the streaming
+  tmp_file1 = "#{file_path.gsub(/wav/){'tmp'}}.wav"
+  tmp_file2 = "#{file_path.gsub(/wav/){'tmp'}}.mp3"
+
+  # converting
+  # ffmpeg: please do 2 channels and normal sample rate
+  system("ffmpeg -i '#{file_path}' -ac 2 -ar 44100 '#{tmp_file1}'")
+
+  # encoding
+  # lame: encode it to mp3
+  system("lame '#{tmp_file1}' '#{tmp_file2}' --quiet")
+
+  rm tmp_file1
+
+  # and put the mp3 to the corret place
+  system("mv '#{tmp_file2}' '#{file_path.gsub(/wav/){'mp3'}}'")
+
 end
 
 # exit if keep_limit is ok
