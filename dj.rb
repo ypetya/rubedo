@@ -58,7 +58,7 @@ class DJ
     loop do
       song = next_song!
       if song
-        play song
+        play(song, song[1])
         mark_done! song
       else
 				song = random_song
@@ -66,6 +66,16 @@ class DJ
         system("rm '#{song[1]}' -f") if song[1] =~ /wiki_mp3/
       end
     end
+  end
+
+  def handle_history title
+    
+    while db.get_first_value( "select count(*) from rubedo_histories" ).to_i > 9
+      id = db.get_first_row( "select id from rubedo_histories order by id asc limit 1")
+      db.execute( "delete from rubedo_histories where id = ?", id )
+    end
+
+    db.execute("insert into rubedo_histories (title,played_at) values (?,?) ", title, Time.now)
   end
 
   def play(song,song_path = nil)
@@ -114,6 +124,9 @@ class DJ
       end
 
       log.info "Playing #{title}!" if log
+      
+      handle_history title
+
       while data = file.read(16384)
         begin
           @shout.send data
@@ -128,12 +141,31 @@ class DJ
     end
   end
 
+  def get_songs_for_random
+    unless defined? @last_played
+      @last_played = nil
+      @wiki_played = 0
+    end
+    wiki = Dir["/tmp/wiki_mp3/**/*.{mp3,ogg}"]
+    songs = Dir["#{music_folder}**/*.{mp3,ogg}"]
+
+    if not wiki.empty? and @last_played != :wiki or @wiki_played < @config['dj']['wiki_play_max']
+      @wiki_played = 0 unless @last_played == :wiki 
+      @last_played = :wiki
+      @wiki_played += 1
+      return wiki
+    elsif not songs.empty?
+      @last_played = :song
+      return songs
+    end
+    []
+  end
+
   # takes a random song off of the filesystem, making this source client independent of any web frontend
   def random_song
     @mode = :dj
 
-    songs = Dir["/tmp/wiki_mp3/**/*.{mp3,ogg}"]
-    songs = Dir["#{music_folder}**/*.{mp3,ogg}"] if songs.empty?
+    songs = get_songs_for_random
     
     path = songs[rand(songs.size)]
 

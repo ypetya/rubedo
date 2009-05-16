@@ -1,15 +1,18 @@
-:flushing_old_songs: Flushing out old songs, probably won't take long...
+:flushing_old_songs: "Flushing out old songs, probably won't take long..."
 :initializing_database: Initializing database with any new songs, could take a while...
 :error: Error! 
 :songs: Songs
 :find: Find
 :np: Now Playing
 :stream: stream
+:blog: blog
+:stream_m3u: m3u
+:history: history
 :queued: Queued
 :empty_queue: Empty queue
 :ago:  
 :no_songs: No songs found.
-:random: Viki felolvas a wikipédiából
+:random: DJ Viki
 :download: download
 :unknow: Unknow
 :upload:

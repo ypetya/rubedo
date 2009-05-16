@@ -54,11 +54,16 @@ module Rubedo::Models
   class Play < Base
     belongs_to :song
     validates_presence_of :filename, :title
-    def self.now_playing; (Play.find :first, :conditions => 'played_at IS NOT NULL', :order => 'played_at desc', :limit => 1); end
-    def self.next_up; (Play.find :all, :conditions => 'queued_at IS NOT NULL', :order => 'queued_at asc'); end
+    def self.now_playing; Play.find( :first, :conditions => 'played_at IS NOT NULL', :order => 'played_at desc', :limit => 1); end
+    def self.next_up; Play.find( :all, :conditions => 'queued_at IS NOT NULL', :order => 'queued_at asc'); end
   end
 
-  class CreateTables < V 0.4
+  class History < Base
+    validates_presence_of :title
+    def self.past; History.find( :all, :order => 'played_at desc'); end
+  end
+
+  class CreateTables < V 0.5
     def self.up
       create_table :rubedo_songs do |t|
         t.column :id, :integer
@@ -73,6 +78,17 @@ module Rubedo::Models
         t.column :title, :text
         t.column :song_id, :integer
         t.column :queued_at, :datetime
+        t.column :played_at, :datetime
+      end
+      create_table :rubedo_comments do |t|
+        t.column :id, :integer
+        t.column :email, :text
+        t.column :name, :text
+        t.column :created_at, :datetime
+      end
+      create_table :rubedo_histories do |t|
+        t.column :id, :integer
+        t.column :title, :text
         t.column :played_at, :datetime
       end
     end
@@ -103,6 +119,13 @@ module Rubedo::Controllers
     end
   end
 
+  class Feed < R '/history'
+    def get
+      @history = History.past
+      render :history
+    end
+  end
+
   class Upload < R '/upload'
     def get
       if Rubedo.config["upload_allow"] == true
@@ -121,10 +144,7 @@ module Rubedo::Controllers
           @error = Rubedo.strings[:upload][:already_uploaded]
           render :error
         else
-					
-          file = @input.File.tempfile.read
-          f = File.new(File.join(MUSIC_FOLDER, @input.File.filename),  "w+")
-          f.puts file
+          FileUtils.move( @input.File.tempfile,File.join(MUSIC_FOLDER, @input.File.filename))
           redirect '/'
         end
       else
@@ -153,6 +173,9 @@ module Rubedo::Controllers
       when "queue"
         @next_up = Play.next_up
         render :_queue
+      when "history"
+        @history = History.past
+        render :_history
       when "now_playing"
         @now_playing = Play.now_playing
         render :_now_playing
@@ -249,8 +272,12 @@ module Rubedo::Views
         div :id => "head" do
           if Rubedo.config["upload_allow"] == true
           span :class => 'links' do
+            a 'home', :href => "http://#{@env['SERVER_NAME']}"
+            a Rubedo.strings[:blog], :href => Rubedo.config["blog_url"]
             a Rubedo.strings[:stream], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
+            a Rubedo.strings[:stream_m3u], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}.m3u"
             a Rubedo.strings[:upload][:name], :href => R(Upload)
+            a Rubedo.strings[:history], :href => R(Feed)
           end
           end
           h1 Rubedo::RADIO_NAME
@@ -296,6 +323,13 @@ module Rubedo::Views
     end
   end
 
+  def history
+    h4 Rubedo.strings[:history]
+    div :id => 'history' do
+      _history
+    end
+  end
+
   def upload
     p Rubedo.strings[:upload][:message]
     form :action => "/upload?upload_id=#{Time.now.to_f}", :method => 'post',
@@ -312,10 +346,23 @@ module Rubedo::Views
     end
   end
 
-
   def _radio
     div :id => "queue" do
       _queue
+    end
+  end
+
+  def _history
+    p Rubedo.strings[:empty_queue] unless @history.any?
+    ul do
+      @history.each do |play|
+        li do
+          text play.title
+          text "&nbsp;"
+          span.grey "#{time_ago(play.played_at)} "
+        end
+        cycle = i % 2 == 0 ? 'dark' : 'light'
+      end
     end
   end
 
@@ -389,9 +436,7 @@ module Rubedo::Helpers
       files[song.filename] = 1
       files
     end
-    wd = Dir.pwd
-    Dir.chdir Rubedo::MUSIC_FOLDER
-    Dir.glob("**/*.{mp3,ogg}").each do |filename|
+    Dir["#{Rubedo::MUSIC_FOLDER}/**/*.{mp3,ogg}"].each do |filename|
       unless songs[filename]
         begin
           Rubedo::Models::Song.create(:title => song_title(filename), :filename => filename)
@@ -401,14 +446,13 @@ module Rubedo::Helpers
         end
       end
     end
-    Dir.chdir wd
   end
 
   # Delete any entries in the database which refer to songs which have been removed from the music folder
   def self.flush_songs
     songs = Rubedo::Models::Song.find(:all)
     songs.each do |song|
-      unless File.exists?(File.join(Rubedo::MUSIC_FOLDER, song.filename))
+      unless File.exists?(song.filename)
         song.destroy
         Rubedo::Models::Play.find(:all, :conditions => ["song_id = ?", song.id]).each {|play| play.destroy}
 
@@ -534,6 +578,8 @@ __END__
 function poll() {
   setInterval("var check_now = new Ajax('/partial/now_playing', {update: 'now_playing', method: 'get'}).request();", 5000);
   setInterval("var check_queue = new Ajax('/partial/queue', {update: 'queue', method: 'get'}).request();", 5000);
+  setInterval("var check_history = new Ajax('/partial/history', {update: 'history', method: 'get'}).request();", 5000);
+
 }
 function queue(id) {var res = new Ajax('/song/' + id, {update: 'queue', method: 'post'}).request();}
 function unqueue(id) {var res = new Ajax('/play/' + id + '/delete', {update: 'queue', method: 'post'}).request();}
