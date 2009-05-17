@@ -1,3 +1,8 @@
+dj:
+  wiki_play_max: 4
+
+blog_url: 'http://link_to.somewhere'
+
 # The name of your radio station, displayed prominently on the frontend and used to title the radio stream.
 radio_name: Rubedo - Ruby Radio
 

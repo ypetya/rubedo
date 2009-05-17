@@ -576,11 +576,11 @@ end
 
 __END__
 function poll() {
-  setInterval("var check_now = new Ajax('/partial/now_playing', {update: 'now_playing', method: 'get'}).request();", 5000);
-  setInterval("var check_queue = new Ajax('/partial/queue', {update: 'queue', method: 'get'}).request();", 5000);
-  setInterval("var check_history = new Ajax('/partial/history', {update: 'history', method: 'get'}).request();", 5000);
-
+  if($('now_playing')) setInterval("var check_now = new Ajax('/partial/now_playing', {update: 'now_playing', method: 'get'}).request();", 5000);
+  if($('queue')) setInterval("var check_queue = new Ajax('/partial/queue', {update: 'queue', method: 'get'}).request();", 5000);
+  if($('history')) setInterval("var check_history = new Ajax('/partial/history', {update: 'history', method: 'get'}).request();", 5000);
 }
+
 function queue(id) {var res = new Ajax('/song/' + id, {update: 'queue', method: 'post'}).request();}
 function unqueue(id) {var res = new Ajax('/play/' + id + '/delete', {update: 'queue', method: 'post'}).request();}
 
