@@ -63,6 +63,11 @@ module Rubedo::Models
     def self.past; History.find( :all, :order => 'played_at desc'); end
   end
 
+  class Comment < Base
+    validates_presence_of :text, :name
+    def self.get_list; Comment.find( :all, :order => 'created_at desc', :limit => 50); end
+  end
+
   class CreateTables < V 0.5
     def self.up
       create_table :rubedo_songs do |t|
@@ -84,6 +89,7 @@ module Rubedo::Models
         t.column :id, :integer
         t.column :email, :text
         t.column :name, :text
+        t.column :text, :text, :limit => 160
         t.column :created_at, :datetime
       end
       create_table :rubedo_histories do |t|
@@ -126,6 +132,35 @@ module Rubedo::Controllers
     end
   end
 
+  class FeedBack < R '/comments'
+    def get
+      @comments = Comment.get_list
+      render :comments
+    end
+    
+    def post
+      # {"name"=>"asfasdfa asd", "res"=>"3", "submit"=>"comment", "text"=>"asdfasda asdfasd", "ans"=>"asdfasfd", "email"=>"asdfdf"}
+      
+      correct = (Date.today.day + 1) % 5
+      @comments = Comment.get_list
+      
+      # the captcha
+      %w{0 1 2 3 4 comment message}.each_with_index do |m,i|
+        return render :comments if not @input.send( m.to_sym ).empty? and not correct == i
+      end
+
+      if @input.res == @input.ans
+        c = Comment.new
+        c.name = @input.name
+        c.text = @input.send( correct.to_s.to_sym )
+        c.email = @input.email
+        c.save!
+      end
+
+      render :comments
+    end
+  end
+
   class Upload < R '/upload'
     def get
       if Rubedo.config["upload_allow"] == true
@@ -135,23 +170,23 @@ module Rubedo::Controllers
       end
     end
 
-    def post
-      if Rubedo.config["upload_allow"] == true && @input.Password.to_s == Rubedo.config["upload_password"]
-        if @input.File == ''
-          @error = Rubedo.strings[:upload][:no_file_selected]
-          render :error
-        elsif File.exists?(File.join(MUSIC_FOLDER, @input.File.filename))
-          @error = Rubedo.strings[:upload][:already_uploaded]
-          render :error
-        else
-          FileUtils.move( @input.File.tempfile,File.join(MUSIC_FOLDER, @input.File.filename))
-          redirect '/'
-        end
-      else
-        @error = Rubedo.strings[:upload][:bad_password]
+  def post
+    if Rubedo.config["upload_allow"] == true && @input.Password.to_s == Rubedo.config["upload_password"]
+      if @input.File == ''
+        @error = Rubedo.strings[:upload][:no_file_selected]
         render :error
+      elsif File.exists?(File.join(MUSIC_FOLDER, @input.File.filename))
+        @error = Rubedo.strings[:upload][:already_uploaded]
+        render :error
+      else
+        FileUtils.move( @input.File.tempfile,File.join(MUSIC_FOLDER, @input.File.filename))
+        redirect '/'
       end
+    else
+      @error = Rubedo.strings[:upload][:bad_password]
+      render :error
     end
+  end
   end
 
   class Plays < R '/play/(\d+)/delete'
@@ -169,24 +204,26 @@ module Rubedo::Controllers
   # Partial feeder
   class Partial < R '/partial/(\w+)'
     def get(partial)
+      # get data
       case partial
       when "queue"
         @next_up = Play.next_up
-        render :_queue
       when "history"
         @history = History.past
-        render :_history
+      when "comments"
+        @comments = Comment.get_list
+      when "comment_list"
+        @comments = Comment.get_list
       when "now_playing"
         @now_playing = Play.now_playing
-        render :_now_playing
       when "radio"
         @now_playing = Play.now_playing
         @next_up = Play.next_up
-        render :_radio
       when "available"
         @available = Song.available(@input[:filter])
-        render :_available
       end
+      # render partial
+      render "_#{partial}".to_sym
     end
   end
 
@@ -271,14 +308,15 @@ module Rubedo::Views
       body :onload => "poll();" do
         div :id => "head" do
           if Rubedo.config["upload_allow"] == true
-          span :class => 'links' do
-            a 'home', :href => "http://#{@env['SERVER_NAME']}"
-            a Rubedo.strings[:blog], :href => Rubedo.config["blog_url"]
-            a Rubedo.strings[:stream], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
-            a Rubedo.strings[:stream_m3u], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}.m3u"
-            a Rubedo.strings[:upload][:name], :href => R(Upload)
-            a Rubedo.strings[:history], :href => R(Feed)
-          end
+            span :class => 'links' do
+              a 'home', :href => "http://#{@env['SERVER_NAME']}"
+              a Rubedo.strings[:blog], :href => Rubedo.config["blog_url"]
+              a Rubedo.strings[:stream], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
+              a Rubedo.strings[:stream_m3u], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}.m3u"
+              a Rubedo.strings[:upload][:name], :href => R(Upload)
+              a Rubedo.strings[:comment], :href => R(FeedBack)
+              a Rubedo.strings[:history], :href => R(Feed)
+            end
           end
           h1 Rubedo::RADIO_NAME
         end
@@ -333,7 +371,7 @@ module Rubedo::Views
   def upload
     p Rubedo.strings[:upload][:message]
     form :action => "/upload?upload_id=#{Time.now.to_f}", :method => 'post',
-         :enctype => 'multipart/form-data' do
+    :enctype => 'multipart/form-data' do
       p do
         span Rubedo.strings[:upload][:file]
         input({:name => "File", :id => "File", :type => 'file'})
@@ -360,6 +398,63 @@ module Rubedo::Views
           text play.title
           text "&nbsp;"
           span.grey "#{time_ago(play.played_at)} "
+        end
+        cycle = i % 2 == 0 ? 'dark' : 'light'
+      end
+    end
+  end
+
+  def comments
+    div :id => 'new_comment' do
+      _new_comment
+    end
+    div :id => 'comment_list' do
+      _comment_list
+    end
+  end
+
+  def eliminate text
+    text = text.gsub(/\\/){ '\\' }
+    text = text.gsub(/'/){ '"' }
+  end
+
+  def avatar_uri(email)
+    "http://www.gravatar.com/avatar.php?gravatar_id=#{MD5.md5(email)}&rating=PG&size=32"
+  end
+
+  def simple_format( name, text, email = '')
+    div( :style => "clear:both" ) do
+      "<div><div style='float:left;margin:4px;'><img src='#{avatar_uri(email)}' alt='#{name}'/></div>" +
+      eliminate(text).gsub(Regexp.new(URI.regexp.source.sub(/^[^:]+:/, '(http|https):'), Regexp::EXTENDED, 'n')) { |m| %{<a href="#{m}">#{m}</a>} } +
+      "</div>"
+    end
+  end
+
+  def _new_comment
+    form :action => "/comments", :method => 'post' do
+
+      input :id => 'comment', :name => 'comment', :type => 'text', :style => 'display:none', :size => 80, :maxlength => 160, :value => (Date.today.day + 1)
+      %w{message 0 1 2 3 4}.map do |m| 
+        input :id => m, :name => m, :type => 'text', :style => 'display:none', :size => 80, :maxlength => 160  
+      end
+      br
+      input :name => 'name', :type => 'text', :size => 30
+      a :href => 'http://gravatar.com' do
+        text 'Gravatar'
+      end
+      input :name => 'email', :type => 'text', :size => 30
+      input :name => 'submit', :type => "submit", :value => 'comment' 
+    end
+  end
+
+  def _comment_list
+    p Rubedo.strings[:empty_queue] unless @comments.any?
+    ul do
+      @comments.each do |comment|
+        li do
+          simple_format(comment.name, comment.text, comment.email)
+          text "&nbsp;"
+          span.grey "#{comment.name} #{time_ago(comment.created_at)} ", :style => 'clear:both'
         end
         cycle = i % 2 == 0 ? 'dark' : 'light'
       end
@@ -408,11 +503,11 @@ module Rubedo::Views
 
   def _available
     ul do
-    @available.each_with_index do |song, i|
-      li :onclick => "queue('#{song.id}'); return false" do
-        song[:title]
+      @available.each_with_index do |song, i|
+        li :onclick => "queue('#{song.id}'); return false" do
+          song[:title]
+        end
       end
-    end
     end
     if @available.empty?
       br
@@ -498,12 +593,12 @@ module Rubedo::Helpers
     distance_in_seconds = ((to_time - from_time).abs).round
 
     case distance_in_minutes
-      when 0          then Rubedo.strings[:distance][:less_minute]
-      when 1          then Rubedo.strings[:distance][:one_minute]
-      when 2..45      then "#{distance_in_minutes} #{Rubedo.strings[:distance][:minutes]}"
-      when 46..90     then Rubedo.strings[:distance][:one_hour]
-      when 90..1440   then "#{(distance_in_minutes.to_f / 60.0).round} #{Rubedo.strings[:distance][:hours]}"
-      else                 Rubedo.strings[:distance][:over_a_day]
+    when 0          then Rubedo.strings[:distance][:less_minute]
+    when 1          then Rubedo.strings[:distance][:one_minute]
+    when 2..45      then "#{distance_in_minutes} #{Rubedo.strings[:distance][:minutes]}"
+    when 46..90     then Rubedo.strings[:distance][:one_hour]
+    when 90..1440   then "#{(distance_in_minutes.to_f / 60.0).round} #{Rubedo.strings[:distance][:hours]}"
+    else                 Rubedo.strings[:distance][:over_a_day]
     end
   end
 
@@ -577,8 +672,13 @@ end
 __END__
 function poll() {
   if($('now_playing')) setInterval("var check_now = new Ajax('/partial/now_playing', {update: 'now_playing', method: 'get'}).request();", 5000);
-  if($('queue')) setInterval("var check_queue = new Ajax('/partial/queue', {update: 'queue', method: 'get'}).request();", 5000);
-  if($('history')) setInterval("var check_history = new Ajax('/partial/history', {update: 'history', method: 'get'}).request();", 5000);
+    if($('queue')) setInterval("var check_queue = new Ajax('/partial/queue', {update: 'queue', method: 'get'}).request();", 5000);
+      if($('history')) setInterval("var check_history = new Ajax('/partial/history', {update: 'history', method: 'get'}).request();", 5000);
+        if($('comment')){
+          $(($('comment').value % 5).toString()).setAttribute('style','');
+          setInterval("var check_comment_list = new Ajax('/partial/comment_list', {update: 'comment_list', method: 'get'}).request();", 5000);
+          $('comment').value = "";
+        }
 }
 
 function queue(id) {var res = new Ajax('/song/' + id, {update: 'queue', method: 'post'}).request();}
@@ -589,13 +689,13 @@ function filter() {
   if (search.zid)
     clearTimeout(search.zid);
 
-  if (last_search != search.value) {
-    search.zid = setTimeout(function() {
+    if (last_search != search.value) {
+      search.zid = setTimeout(function() {
       $('spinner').style.display = "inline";
       var filter = new Ajax("/partial/available?filter=" + $('search').value, {update: 'available', method: 'get', onComplete: function() {$('spinner').style.display = "none";}}).request();
     }, 500);
     last_search = search;
-  }
+    }
 }
 
 last_search = "";

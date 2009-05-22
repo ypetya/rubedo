@@ -5,6 +5,7 @@
 :find: Chercher
 :np: A l'écoute
 :stream: flux
+:stream_m3u: m3u
 :queued: Liste de lecture
 :empty_queue: Liste de lecture vide
 :ago: ago
@@ -12,6 +13,7 @@
 :random: random
 :download: télécharger
 :unknow: Inconnu
+:comment: comment
 :upload:
   :name: envoyer une chanson
   :message: Bienvenue! Envoyez une chanson au format MP3 ou OGG.

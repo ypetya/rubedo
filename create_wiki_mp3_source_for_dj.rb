@@ -7,7 +7,7 @@
 require 'rubygems'
 
 # we need to ...
-KEEP_FILE_COUNT = 10
+KEEP_FILE_COUNT = 20
 # how to ...
 GENERATE_WAV = File.join(File.dirname(__FILE__),'wiki_to_wav.rb 3')
 # keep a safe loop count
