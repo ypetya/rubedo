@@ -1,5 +1,6 @@
 #!/usr/local/bin/ruby
 
+
 $LOAD_PATH.unshift("lib", "lib/sqlite3")
 
 require 'yaml'
