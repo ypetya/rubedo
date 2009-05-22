@@ -65,7 +65,6 @@ module Rubedo::Models
   end
 
   class Comment < Base
-    validates_presence_of :text, :name
     def self.get_list; Comment.find( :all, :order => 'created_at desc', :limit => 50); end
   end
 
@@ -150,10 +149,11 @@ module Rubedo::Controllers
         return render :comments if not @input.send( m.to_sym ).empty? and not correct == i
       end
 
-      if @input.res == @input.ans
+      tex = @input.send( correct.to_s.to_sym )
+      unless tex.empty? 
         c = Comment.new
         c.name = @input.name
-        c.text = @input.send( correct.to_s.to_sym )
+        c.text = tex 
         c.email = @input.email
         c.save!
       end
