@@ -18,13 +18,13 @@ a img {
 }
 
 a:hover {
-  background-color: #504123;
+  background-color: #334664;
   color: white;
   text-decoration: none;
 }
 
 #head {
-  background-color: #504123;
+  background-color: #334664;
   padding: 5px;
   margin-bottom: 5px;
 }
@@ -46,7 +46,7 @@ a:hover {
 }
 #head .links a:hover {
   background-color:white;
-  color: #504123;
+  color: #334664;
 }
 
 #np {
@@ -84,10 +84,10 @@ ul {
 }
 
 li {
-  border-bottom:1px solid #ddd;padding:5px;position:relative;
+  border-bottom:1px solid #334664;padding:5px;position:relative;
 }
 
-li:hover{background:#eee;}
+li:hover{background:#2f3b4e;}
 
 .grey {
   color: grey;
@@ -95,7 +95,7 @@ li:hover{background:#eee;}
 }
 
 #footer {
-  border-top: 1px solid #504123;
+  border-top: 1px solid #334664;
   clear: both;
   margin-top: 10px;
   padding-top: 9px; padding-bottom: 11px;
@@ -107,13 +107,13 @@ li:hover{background:#eee;}
 }
 
 h1 {
-  color: #D4CB5F;
+  color: #ebc0ba;
   display: inline;
   font-weight: normal;
 }
 
 h2 {
-  color: #504123;
+  color: #334664;
   font-weight: normal;
   display: inline;
   font-size: 22px;
