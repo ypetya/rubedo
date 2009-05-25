@@ -39,7 +39,7 @@ def encode_to_mp3 file_path
 
   # encoding
   # lame: encode it to mp3
-  system("lame '#{tmp_file1}' '#{tmp_file2}' --quiet --tt \"#{title.gsub(/["]/){''}}\" --ta 'Wikipédia'")
+  system("lame '#{tmp_file1}' '#{tmp_file2}' --quiet --tt \"#{title.gsub(/["]/){''}}\"")
 
   rm tmp_file1
 
