@@ -71,7 +71,7 @@ class DJ
 
   def handle_history title
     
-    while db.get_first_value( "select count(*) from rubedo_histories" ).to_i > 9
+    while db.get_first_value( "select count(*) from rubedo_histories" ).to_i > 29
       id = db.get_first_row( "select id from rubedo_histories order by id asc limit 1")
       db.execute( "delete from rubedo_histories where id = ?", id )
     end

@@ -45,7 +45,7 @@ module Rubedo::Models
 
     def self.available(filter = nil)
       if filter.blank?
-        Song.find :all, :order => "upper(title) asc"
+        Song.find :all, :order => "last_played_at asc,upper(title) asc"
       else
         Song.find :all, :conditions => ["title like ? or title like ? or filename like ? or filename like ? or filename like ?", "#{filter}%", "% #{filter}%", "#{filter}%", "% #{filter}%", "%\/#{filter}%"], :order => "upper(title) asc"
       end
@@ -65,7 +65,7 @@ module Rubedo::Models
   end
 
   class Comment < Base
-    def self.get_list; Comment.find( :all, :order => 'created_at desc', :limit => 50); end
+    def self.get_list; Comment.find( :all, :order => 'created_at desc', :limit => 30); end
   end
 
   class CreateTables < V 0.5
