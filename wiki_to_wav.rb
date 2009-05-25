@@ -192,12 +192,13 @@ def hunt_for_wiki_image_in links, agent
 end
 
 def generate_filename title
+  file_name = title.gsub(/[^a-zA-Z0-9]/){''}
   ret = SPEAK_COMMAND.gsub(/TMPFILENAME/) do
-		title = title.gsub(/[^a-zA-Z0-9]/){''}
+    file_name
 	end
 
   #mp3title_file
-  File.open("/tmp/wiki_wav/#{ret}.wav.title",'c') do |f|
+  File.open("/tmp/wiki_wav/#{file_name}.wav.title",'w') do |f|
     f.puts title 
   end
 
