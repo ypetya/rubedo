@@ -9,6 +9,7 @@ require 'yaml'
 $LOAD_PATH.unshift("lib", "lib/sqlite3")
 require 'shout'
 require 'sqlite3'
+require 'id3/id3'
 
 class DJ
 
