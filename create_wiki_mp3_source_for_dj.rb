@@ -32,7 +32,7 @@ def encode_to_mp3 file_path
   # ffmpeg: please do 2 channels and normal sample rate
   system("ffmpeg -i '#{file_path}' -ac 2 -ar 44100 '#{tmp_file1}'")
 
-  title = File.read title_file 
+  title = File.read( title_file ).strip
 
   # removeing title data... :)
   rm title_file
