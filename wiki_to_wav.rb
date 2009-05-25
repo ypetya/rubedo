@@ -191,10 +191,17 @@ def hunt_for_wiki_image_in links, agent
   end
 end
 
-def generate_filename counter
-  SPEAK_COMMAND.gsub(/TMPFILENAME/) do
-		counter = counter.gsub(/[^a-zA-Z0-9]/){''}
+def generate_filename title
+  ret = SPEAK_COMMAND.gsub(/TMPFILENAME/) do
+		title = title.gsub(/[^a-zA-Z0-9]/){''}
 	end
+
+  #mp3title_file
+  File.open("/tmp/wiki_wav/#{ret}.wav.title",'c') do |f|
+    f.puts title 
+  end
+
+  ret
 end
 
 #make a new mechanize user agent
@@ -244,8 +251,6 @@ while i > 0
     f.puts "VÉGE."
   end
   #say
-  #puts generate_filename(oldal.title)
-	#gets
   system "#{generate_filename(oldal.title)} #{DIR}/#{FILENAME}"
   #increment counter and garbage collect
   i = i+1

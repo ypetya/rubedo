@@ -27,14 +27,19 @@ def encode_to_mp3 file_path
   # we encode to a temporary path not to broke the streaming
   tmp_file1 = "#{file_path.gsub(/wav/){'tmp'}}.wav"
   tmp_file2 = "#{file_path.gsub(/wav/){'tmp'}}.mp3"
-
+  title_file = "#{file_path}.title"
   # converting
   # ffmpeg: please do 2 channels and normal sample rate
   system("ffmpeg -i '#{file_path}' -ac 2 -ar 44100 '#{tmp_file1}'")
 
+  title = File.read title_file 
+
+  # removeing title data... :)
+  rm title_file
+
   # encoding
   # lame: encode it to mp3
-  system("lame '#{tmp_file1}' '#{tmp_file2}' --quiet")
+  system("lame '#{tmp_file1}' '#{tmp_file2}' --quiet --tt \"#{title.gsub(/["]/){''}}\" --ta 'Wikipédia'")
 
   rm tmp_file1
 
