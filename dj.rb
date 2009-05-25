@@ -245,7 +245,9 @@ class DJ
     title += "#{song_title}" if song_title
 
     # Fall back on the filename with the extension stripped, and any leading numbers/punctuation stripped
-    title ||= File.basename(path, File.extname(path)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
+    if title.emtpy?
+      title= File.basename(path, File.extname(path)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
+    end
 
     title
   end

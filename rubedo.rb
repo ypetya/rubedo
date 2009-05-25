@@ -559,7 +559,7 @@ module Rubedo::Helpers
     end
   end
 
-  def self.song_title(path)
+  def song_title(path)
     return nil unless path
     # quick title for oggs
     unless path.match(/\.mp3$/)
@@ -581,13 +581,17 @@ module Rubedo::Helpers
       artist = m.tagID3v1["ARTIST"] if m.tagID3v1["ARTIST"]
       song_title = m.tagID3v1["TITLE"] if m.tagID3v1["TITLE"]
     end
-    title = "#{artist} - #{song_title}" if artist and song_title
+    title = artist.empty? ? "" : "#{artist} - " if artist
+    title += "#{song_title}" if song_title
 
     # Fall back on the filename with the extension stripped, and any leading numbers/punctuation stripped
-    title ||= File.basename(path, File.extname(path)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
+    if title.emtpy?
+      title= File.basename(path, File.extname(path)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
+    end
 
     title
   end
+
 
   # This is a much stripped down version of ActionView's time_ago_in_words, credit goes solidly to David Heinemeier Hanssen.
   def time_ago(from_time)
