@@ -171,23 +171,23 @@ module Rubedo::Controllers
       end
     end
 
-  def post
-    if Rubedo.config["upload_allow"] == true && @input.Password.to_s == Rubedo.config["upload_password"]
-      if @input.File == ''
-        @error = Rubedo.strings[:upload][:no_file_selected]
-        render :error
-      elsif File.exists?(File.join(MUSIC_FOLDER, @input.File.filename))
-        @error = Rubedo.strings[:upload][:already_uploaded]
-        render :error
+    def post
+      if Rubedo.config["upload_allow"] == true && @input.Password.to_s == Rubedo.config["upload_password"]
+        if @input.File == ''
+          @error = Rubedo.strings[:upload][:no_file_selected]
+          render :error
+        elsif File.exists?(File.join(MUSIC_FOLDER, @input.File.filename))
+          @error = Rubedo.strings[:upload][:already_uploaded]
+          render :error
+        else
+          FileUtils.move( @input.File.tempfile,File.join(MUSIC_FOLDER, @input.File.filename))
+          redirect '/'
+        end
       else
-        FileUtils.move( @input.File.tempfile,File.join(MUSIC_FOLDER, @input.File.filename))
-        redirect '/'
+        @error = Rubedo.strings[:upload][:bad_password]
+        render :error
       end
-    else
-      @error = Rubedo.strings[:upload][:bad_password]
-      render :error
     end
-  end
   end
 
   class Plays < R '/play/(\d+)/delete'
@@ -441,11 +441,11 @@ module Rubedo::Views
         input :id => m, :name => m, :type => 'text', :style => 'display:none', :size => 80, :maxlength => 160  
       end
       br
-      input :name => 'name', :type => 'text', :size => 30
+      input :name => 'name', :type => 'text', :size => 30, :value => 'name'
       a :href => 'http://gravatar.com' do
         text 'Gravatar'
       end
-      input :name => 'email', :type => 'text', :size => 30
+      input :name => 'email', :type => 'text', :size => 30, :value => 'email'
       input :name => 'submit', :type => "submit", :value => 'comment' 
     end
   end
