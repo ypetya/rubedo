@@ -147,9 +147,9 @@ class DJ
       @wiki_played = 0
     end
     wiki = Dir["/tmp/wiki_mp3/**/*.{mp3,ogg}"]
-    songs = Dir["#{music_folder}**/*.{mp3,ogg}"]
+    songs = Dir["#{music_folder}/**/*.{mp3,ogg}"]
 
-    if not wiki.empty? and @last_played != :wiki or @wiki_played < @config['dj']['wiki_play_max']
+    if not wiki.empty? and ( @last_played != :wiki or @wiki_played < @config['dj']['wiki_play_max'])
       @wiki_played = 0 unless @last_played == :wiki 
       @last_played = :wiki
       @wiki_played += 1
@@ -172,7 +172,7 @@ class DJ
     if not path or path.empty?
       nil
     else
-      [0, path, quick_title(path)]
+      [0, path, song_title(path)]
     end
   end
 
@@ -218,9 +218,34 @@ class DJ
     end
   end
 
-  # getting the title of a song we may not have an entry for
-  def quick_title(song)
-    File.basename(song, File.extname(song)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
+  def song_title(path)
+    return nil unless path
+    # quick title for oggs
+    unless path.match(/\.mp3$/)
+      return File.basename(path, File.extname(path)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
+    end
+
+    m = ID3::AudioFile.new(path)
+
+    title, artist, song_title = [nil] * 3
+    if m.tagID3v2 and m.tagID3v2.any?
+      if m.tagID3v2["ARTIST"] and m.tagID3v2["ARTIST"]["encoding"] and m.tagID3v2["ARTIST"]["encoding"] == 0
+        artist = m.tagID3v2["ARTIST"]["text"] if m.tagID3v2["ARTIST"]["text"]
+      end
+      if m.tagID3v2["TITLE"] and m.tagID3v2["TITLE"]["encoding"] and m.tagID3v2["TITLE"]["encoding"] == 0
+        song_title = m.tagID3v2["TITLE"]["text"] if m.tagID3v2["TITLE"]["text"]
+      end
+    end
+    if artist.nil? and title.nil? and m.tagID3v1 and m.tagID3v1.any?
+      artist = m.tagID3v1["ARTIST"] if m.tagID3v1["ARTIST"]
+      song_title = m.tagID3v1["TITLE"] if m.tagID3v1["TITLE"]
+    end
+    title = "#{artist} - #{song_title}" if artist and song_title
+
+    # Fall back on the filename with the extension stripped, and any leading numbers/punctuation stripped
+    title ||= File.basename(path, File.extname(path)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
+
+    title
   end
 
   def log; @log; end
