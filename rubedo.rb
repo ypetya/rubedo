@@ -69,6 +69,9 @@ module Rubedo::Models
     def self.get_first; Comment.find( :first, :order => 'created_at desc'); end
   end
 
+  class Link < Base
+  end
+
   class CreateTables < V 0.5
     def self.up
       create_table :rubedo_songs do |t|
@@ -98,6 +101,18 @@ module Rubedo::Models
         t.column :title, :text
         t.column :played_at, :datetime
       end
+    end
+  end
+  class CreateTablesStep2 < V 0.6
+    def self.up
+      create_table :rubedo_links do |t|
+        t.column :id, :integer
+        t.column :url, :text
+        t.column :licence, :text
+        t.column :media_type, :text
+        t.column :uploaded_at, :datetime
+      end
+      add_column :rubedo_songs, :licence, :text
     end
   end
 end
@@ -173,15 +188,17 @@ module Rubedo::Controllers
 
     def post
       if Rubedo.config["upload_allow"] == true && @input.Password.to_s == Rubedo.config["upload_password"]
-        if @input.File == ''
+        if @input.url.empty? or @input.licence.empty?
           @error = Rubedo.strings[:upload][:no_file_selected]
           render :error
-        elsif File.exists?(File.join(MUSIC_FOLDER, @input.File.filename))
-          @error = Rubedo.strings[:upload][:already_uploaded]
-          render :error
         else
-          FileUtils.move( @input.File.tempfile,File.join(MUSIC_FOLDER, @input.File.filename))
-          redirect '/'
+          l = Link.new 
+          l.url = @input.url
+          l.licence = @input.licence
+          l.media_type = 'audio'
+          l.uploaded_at = Time.now
+          l.save
+          redirect '/upload'
         end
       else
         @error = Rubedo.strings[:upload][:bad_password]
@@ -376,14 +393,16 @@ module Rubedo::Views
 
   def upload
     p Rubedo.strings[:upload][:message]
-    form :action => "/upload?upload_id=#{Time.now.to_f}", :method => 'post',
+    form :action => "/upload", :method => 'post',
     :enctype => 'multipart/form-data' do
       p do
-        span Rubedo.strings[:upload][:file]
-        input({:name => "File", :id => "File", :type => 'file'})
+        input(:name => "url", :id => "url", :type => 'text', :value => 'url to mp3 or zip', :size => 80)
+        br
+        input(:name => 'licence', :id => 'licence', :type => 'text', :value => 'url to licence', :size => 80)
         br
         span Rubedo.strings[:upload][:password]
-        input({:name => "Password", :id => "Password", :type => 'text'})
+        br
+        input({:name => "Password", :id => "Password", :type => 'password', :size => 40})
         br
         input.newfile! :type => "submit", :value => Rubedo.strings[:upload][:submit]
       end
@@ -439,7 +458,7 @@ module Rubedo::Views
   def _new_comment
     form :action => "/comments", :method => 'post' do
 
-      input :id => 'comment', :name => 'comment', :type => 'text', :style => 'display:none', :size => 80, :maxlength => 160, :value => (Date.today.day + 1)
+      input :id => 'comment', :name => 'comment', :type => 'text', :style => 'display:none', :size => 80, :maxlength => 140, :value => (Date.today.day + 1)
       %w{message 0 1 2 3 4}.map do |m| 
         input :id => m, :name => m, :type => 'text', :style => 'display:none', :size => 80, :maxlength => 160  
       end
@@ -520,7 +539,10 @@ module Rubedo::Views
     ul do
       @available.each_with_index do |song, i|
         li :onclick => "queue('#{song.id}'); return false" do
-          song[:title]
+          text song[:title]
+          if song[:licence] and not song[:licence].empty?
+            a 'licence', :href => song[:licence]
+          end
         end
       end
     end
@@ -551,8 +573,8 @@ module Rubedo::Helpers
         begin
           Rubedo::Models::Song.create(:title => song_title(filename), :filename => filename)
           puts "Added #{filename} to database."
-        rescue
-          puts "Error adding #{filename} to database, moving on."
+        rescue Exception => exc
+          puts "Error adding #{filename} to database, moving on. #{exc.message}"
         end
       end
     end
@@ -571,7 +593,7 @@ module Rubedo::Helpers
     end
   end
 
-  def song_title(path)
+  def self.song_title(path)
     return nil unless path
     # quick title for oggs
     unless path.match(/\.mp3$/)
@@ -593,11 +615,12 @@ module Rubedo::Helpers
       artist = m.tagID3v1["ARTIST"] if m.tagID3v1["ARTIST"]
       song_title = m.tagID3v1["TITLE"] if m.tagID3v1["TITLE"]
     end
+    title = ''
     title = artist.empty? ? "" : "#{artist} - " if artist
     title += "#{song_title}" if song_title
 
     # Fall back on the filename with the extension stripped, and any leading numbers/punctuation stripped
-    if title.emtpy?
+    if title.empty?
       title= File.basename(path, File.extname(path)).gsub(/^[^A-Za-z]+\s+(\w)/, "\\1")
     end
 

@@ -241,6 +241,7 @@ class DJ
       artist = m.tagID3v1["ARTIST"] if m.tagID3v1["ARTIST"]
       song_title = m.tagID3v1["TITLE"] if m.tagID3v1["TITLE"]
     end
+		title = ''
     title = artist.empty? ? "" : "#{artist} - " if artist
     title += "#{song_title}" if song_title
 
