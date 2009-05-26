@@ -258,7 +258,7 @@ module Rubedo::Controllers
   class Style < R '/custom.css'
     def get
       @headers['Content-Type'] = 'text/css'
- "body{color:white;background: transparent url(http://#{@env['SERVER_NAME']}/la_nuit.jpg);}a:hover{color:#{Rubedo.config[:colors][:color]};background-color:#{Rubedo.config[:colors][:background]};}#head{background-color:#{Rubedo.config[:colors][:background]};}#head .links a:hover {color:#{Rubedo.config[:colors][:background]};}h2 {color:#{Rubedo.config[:colors][:background]};}"
+ "body{color:white;background: transparent url(http://#{@env['SERVER_NAME']}/la_nuit.jpg) no-repeat fixed;}a:hover{color:#{Rubedo.config[:colors][:color]};background-color:#{Rubedo.config[:colors][:background]};}#head{background-color:#{Rubedo.config[:colors][:background]};}#head .links a:hover {color:#{Rubedo.config[:colors][:background]};}h2 {color:#{Rubedo.config[:colors][:background]};}"
     end
   end
 
