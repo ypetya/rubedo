@@ -63,7 +63,7 @@ class DJ
         mark_done! song
       else
 				song = random_song
-        play(song, song[1])
+        play(song, song[1], ' - auto' )
         system("rm '#{song[1]}' -f") if song[1] =~ /wiki_mp3/
       end
     end
@@ -79,7 +79,7 @@ class DJ
     db.execute("insert into rubedo_histories (title,played_at) values (?,?) ", title, Time.now)
   end
 
-  def play(song,song_path = nil)
+  def play(song, song_path = nil, source = '' )
     # a nil song means there are no songs at all, so just slowly loop until one comes along
     if song.nil?
       sleep 500
@@ -126,7 +126,7 @@ class DJ
 
       log.info "Playing #{title}!" if log
       
-      handle_history title
+      handle_history( title + source )
 
       while data = file.read(16384)
         begin
