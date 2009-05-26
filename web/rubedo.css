@@ -34,6 +34,12 @@ a:hover {
   float: right;
   line-height: 30px;
 }
+#head .firstcomment{
+  float: right;
+  line-height: 20px;
+  width: 400px;
+}
+
 #head .links a {
   color: white;
   text-decoration: none;

@@ -66,6 +66,7 @@ module Rubedo::Models
 
   class Comment < Base
     def self.get_list; Comment.find( :all, :order => 'created_at desc', :limit => 30); end
+    def self.get_first; Comment.find( :first, :order => 'created_at desc'); end
   end
 
   class CreateTables < V 0.5
@@ -139,10 +140,7 @@ module Rubedo::Controllers
     end
     
     def post
-      # {"name"=>"asfasdfa asd", "res"=>"3", "submit"=>"comment", "text"=>"asdfasda asdfasd", "ans"=>"asdfasfd", "email"=>"asdfdf"}
-      
       correct = (Date.today.day + 1) % 5
-      @comments = Comment.get_list
       
       # the captcha
       %w{0 1 2 3 4 comment message}.each_with_index do |m,i|
@@ -157,6 +155,8 @@ module Rubedo::Controllers
         c.email = @input.email
         c.save!
       end
+
+      @comments = Comment.get_list
 
       render :comments
     end
@@ -215,6 +215,8 @@ module Rubedo::Controllers
         @comments = Comment.get_list
       when "comment_list"
         @comments = Comment.get_list
+      when 'first_comment'
+        @first_comment = Comment.get_first
       when "now_playing"
         @now_playing = Play.now_playing
       when "radio"
@@ -310,16 +312,17 @@ module Rubedo::Views
       end
       body :onload => "poll();" do
         div :id => "head" do
-          if Rubedo.config["upload_allow"] == true
-            span :class => 'links' do
-              a 'home', :href => "http://#{@env['SERVER_NAME']}"
-              a Rubedo.strings[:blog], :href => Rubedo.config["blog_url"]
-              a Rubedo.strings[:stream], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
-              a Rubedo.strings[:stream_m3u], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}.m3u"
-              a Rubedo.strings[:upload][:name], :href => R(Upload)
-              a Rubedo.strings[:comment], :href => R(FeedBack)
-              a Rubedo.strings[:history], :href => R(Feed)
-            end
+          span :class => 'links' do
+            a 'home', :href => "http://#{@env['SERVER_NAME']}"
+            a Rubedo.strings[:blog], :href => Rubedo.config["blog_url"]
+            a Rubedo.strings[:stream], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}"
+            a Rubedo.strings[:stream_m3u], :href => "http://#{@env['SERVER_NAME']}#{Rubedo::PUBLIC_STREAM_SUFFIX}.m3u"
+            a Rubedo.strings[:upload][:name], :href => R(Upload) if Rubedo.config["upload_allow"] == true
+            a Rubedo.strings[:comment], :href => R(FeedBack)
+            a Rubedo.strings[:history], :href => R(Feed)
+          end
+          span :id => 'firstcomment',:class => 'firstcomment' do
+            _first_comment Rubedo::Models::Comment.get_first
           end
           h1 Rubedo::RADIO_NAME
         end
@@ -461,6 +464,15 @@ module Rubedo::Views
         end
         cycle = i % 2 == 0 ? 'dark' : 'light'
       end
+    end
+  end
+
+  def _first_comment comment = nil
+    comment ||= @first_comment
+    if comment
+        simple_format(comment.name, comment.text, comment.email)
+        text "&nbsp;"
+        span.grey "#{comment.name} #{time_ago(comment.created_at)} ", :style => 'clear:both'
     end
   end
 
@@ -679,13 +691,15 @@ end
 __END__
 function poll() {
   if($('now_playing')) setInterval("var check_now = new Ajax('/partial/now_playing', {update: 'now_playing', method: 'get'}).request();", 5000);
-    if($('queue')) setInterval("var check_queue = new Ajax('/partial/queue', {update: 'queue', method: 'get'}).request();", 5000);
-      if($('history')) setInterval("var check_history = new Ajax('/partial/history', {update: 'history', method: 'get'}).request();", 5000);
-        if($('comment')){
-          $(($('comment').value % 5).toString()).setAttribute('style','');
-          setInterval("var check_comment_list = new Ajax('/partial/comment_list', {update: 'comment_list', method: 'get'}).request();", 5000);
-          $('comment').value = "";
-        }
+  if($('queue')) setInterval("var check_queue = new Ajax('/partial/queue', {update: 'queue', method: 'get'}).request();", 5000);
+  if($('history')) setInterval("var check_history = new Ajax('/partial/history', {update: 'history', method: 'get'}).request();", 10000);
+  if($('comment')){
+    $(($('comment').value % 5).toString()).setAttribute('style','');
+    setInterval("var check_comment_list = new Ajax('/partial/comment_list', {update: 'comment_list', method: 'get'}).request();", 5000);
+    $('comment').value = "";
+  }
+  if($('firstcomment')) setInterval("var check_firstcomment = new Ajax('/partial/first_comment', {update: 'firstcomment', method: 'get'}).request();", 60000);
+
 }
 
 function queue(id) {var res = new Ajax('/song/' + id, {update: 'queue', method: 'post'}).request();}
