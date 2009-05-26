@@ -115,6 +115,13 @@ module Rubedo::Models
       add_column :rubedo_songs, :licence, :text
     end
   end
+  class CreateTablesStep3 < V 0.7
+    def self.up
+      add_column :rubedo_songs, :votes, :integer
+      add_column :rubedo_plays, :song_id, :integer
+      add_column :rubedo_plays, :licence, :text
+    end
+  end
 end
 
 module Rubedo::Controllers
@@ -133,7 +140,7 @@ module Rubedo::Controllers
     # Queues a song, and returns the updated queue partial
     def post(id)
       if @song = Song.find_by_id(id)
-        Play.create(:song => @song, :filename => @song.filename, :title => @song.title, :queued_at => Time.now)
+        Play.create(:song => @song, :filename => @song.filename, :title => @song.title, :queued_at => Time.now, :song_id => @song.id, :licence => @song.licence)
       end
 
       @next_up = Play.next_up
@@ -204,6 +211,22 @@ module Rubedo::Controllers
         @error = Rubedo.strings[:upload][:bad_password]
         render :error
       end
+    end
+  end
+
+  class Votes < R '/vote/(\d+)/(available|history)'
+    def post(id,template)
+      if song = Song.find_by_id(id)
+        song.votes ||= 0
+        song.votes += 1
+        song.save
+      end
+      if template == available
+        @available = Song.available
+      else
+        @history = History.past
+      end
+      render "_#{template}".to_sym
     end
   end
 
@@ -423,6 +446,12 @@ module Rubedo::Views
           text play.title
           text "&nbsp;"
           span.grey "#{time_ago(play.played_at)} "
+          if play[:licence] and not play[:licence].empty?
+            a 'licence', :href => play[:licence]
+            a.delete :onclick => "vote_for_delete(#{play[:song_id]},'history'); return false;", :href => "#" do
+              img :src => R(Public, "delete.gif")
+            end
+          end
         end
         cycle = i % 2 == 0 ? 'dark' : 'light'
       end
@@ -538,10 +567,16 @@ module Rubedo::Views
   def _available
     ul do
       @available.each_with_index do |song, i|
-        li :onclick => "queue('#{song.id}'); return false" do
-          text song[:title]
+        li do
+          span :onclick => "queue('#{song.id}'); return false" do
+            text song[:title]
+          end
           if song[:licence] and not song[:licence].empty?
             a 'licence', :href => song[:licence]
+            a.delete :onclick => "vote_for_delete(#{song.id},'available'); return false;", :href => "#" do
+              text song[:votes]
+              img :src => R(Public, "delete.gif")
+            end
           end
         end
       end
@@ -727,6 +762,8 @@ function poll() {
 
 function queue(id) {var res = new Ajax('/song/' + id, {update: 'queue', method: 'post'}).request();}
 function unqueue(id) {var res = new Ajax('/play/' + id + '/delete', {update: 'queue', method: 'post'}).request();}
+function vote_for_delete(id,upd) {var res = new Ajax('/vote/' + id + '/' + upd ,  {update: upd, method: 'post'} ).request();}
+
 
 function filter() {
   search = $("search");

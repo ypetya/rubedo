@@ -69,14 +69,14 @@ class DJ
     end
   end
 
-  def handle_history title
+  def handle_history title, song_id = nil, licence = nil
     
     while db.get_first_value( "select count(*) from rubedo_histories" ).to_i > 29
       id = db.get_first_row( "select id from rubedo_histories order by id asc limit 1")
       db.execute( "delete from rubedo_histories where id = ?", id )
     end
 
-    db.execute("insert into rubedo_histories (title,played_at) values (?,?) ", title, Time.now)
+    db.execute("insert into rubedo_histories (title,played_at,song_id,licence) values (?,?,?,?) ", title, Time.now, song_id, licence)
   end
 
   def play(song, song_path = nil, source = '' )
@@ -86,7 +86,7 @@ class DJ
       return nil
     end
 
-    id, path, title = song
+    id, path, title, song_id, licence = song
     song_path ||= File.join( music_folder, path)
 
     unless File.exists?(song_path)
@@ -126,7 +126,7 @@ class DJ
 
       log.info "Playing #{title}!" if log
       
-      handle_history( title + source )
+      handle_history( title + source, id, licence )
 
       while data = file.read(16384)
         begin
@@ -173,7 +173,8 @@ class DJ
     if not path or path.empty?
       nil
     else
-      [0, path, song_title(path)]
+      song_id, licence = db.get_first_row( "select id, licence from rubedo_songs where filename = ? asc limit 1", path)
+      [0, path, song_title(path), song_id, licence]
     end
   end
 
@@ -184,7 +185,7 @@ class DJ
     play_id, filename, title, song_id = nil
     begin
       # this query will get a song which was cut off while playing first, and failing that, will get the next song on the queue which hasn't been played
-      play_id, filename, title, song_id = db.get_first_row "select id, filename, title, song_id from rubedo_plays where queued_at IS NOT NULL order by queued_at asc limit 1"
+      play_id, filename, title, song_id, licence = db.get_first_row "select id, filename, title, song_id, licence from rubedo_plays where queued_at IS NOT NULL order by queued_at asc limit 1"
       return nil unless play_id
     rescue
       log.error "Error at some point during finding #{'(and setting) ' if set_as_playing}next song.  Filename was: #{filename}\n#{$!}" if log
@@ -193,7 +194,7 @@ class DJ
 
     mark_start!(play_id, song_id) if set_as_playing
 
-    [play_id, filename, title]
+    [play_id, filename, title, song_id, licence]
   end
 
   def next_song!
