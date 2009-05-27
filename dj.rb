@@ -173,7 +173,7 @@ class DJ
     if not path or path.empty?
       nil
     else
-      song_id, licence = db.get_first_row( "select id, licence from rubedo_songs where filename = ? asc limit 1", path)
+      song_id, licence = db.get_first_row( "select id, licence from rubedo_songs where filename = ? limit 1", path)
       [0, path, song_title(path), song_id, licence]
     end
   end

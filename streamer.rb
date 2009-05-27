@@ -28,8 +28,8 @@ LOCK = '~/.streamer.lock'
 TMP = '/tmp/download'
 FileUtils.mkdir_p(TMP)
 
-# 60 minutes for download
-def locked_run timeout = 60 * 60 
+# 30 minutes for download
+def locked_run timeout = 30 * 60 
   exit if File.exists?(LOCK)
   %x{touch #{LOCK}}
   begin
@@ -51,18 +51,20 @@ end
 # 1. Locked content. if not enough disk space, 
 DISK_MAX = 30 # %
 # we are allowed to delete until disk free is reaching
-DISK_OK = 40 # %
+DISK_OK = 35 # %
 @db = SQLite3::Database.new(File.join(@db_folder, "rubedo.db"))
 @db.busy_timeout(200)
 if disk_free < DISK_MAX
   count = 0
   while disk_free < DISK_OK and count < 40
     count += 1
-    filename = @db.get_first_value( "select filename from rubedo_songs order by votes desc, last_played_at asc limit 1" )
-    FileUtils.rm(filename) if File.exists?(filename)
+    if filename = @db.get_first_value( "select filename from rubedo_songs order by votes desc, last_played_at asc limit 1" )
+      FileUtils.rm(filename) if File.exists?(filename)
+    end
   end
 end
 # 2. now please download a link, 
+@db.get_first_value( "select url from rubedo_links order by uploaded_at") 
 # 3. unzip it, 
 # 4. flush it, 
 # 5. create it in the db and make licence info

@@ -118,8 +118,9 @@ module Rubedo::Models
   class CreateTablesStep3 < V 0.7
     def self.up
       add_column :rubedo_songs, :votes, :integer
-      add_column :rubedo_plays, :song_id, :integer
       add_column :rubedo_plays, :licence, :text
+      add_column :rubedo_histories, :licence, :text
+      add_column :rubedo_histories, :song_id, :text
     end
   end
 end
