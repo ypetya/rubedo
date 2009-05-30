@@ -125,9 +125,9 @@ def parse_node f, node, depth=0
     elsif node.name =~ /^img$/
       to_say( f, 'KÉP: ' + (node/"@title").to_s + "\n")
     elsif node.name =~ /^table$/
-      if node.inner_text =~ /Tartalomjegyzék/
+      if node.inner_text =~ /Tartalomjegyzék/u
         to_say( f, node.inner_text.gsub(/[0123456789.]{1,3}/,'').split("\n").join(".\n") )
-      elsif node.inner_text =~ /m·v·sz/
+      elsif node.inner_text =~ /m\W{0,3}v{0,3}sz/u
         return
       else
         if node.inner_text.size > TABLAZAT_LIMIT

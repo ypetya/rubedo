@@ -417,12 +417,11 @@ module Rubedo::Views
 
   def upload
     p Rubedo.strings[:upload][:message]
-    form :action => "/upload", :method => 'post',
-    :enctype => 'multipart/form-data' do
+    form :action => "/upload", :method => 'post', :enctype => 'multipart/form-data' do
       p do
-        input(:name => "url", :id => "url", :type => 'text', :value => 'url to mp3 or zip', :size => 80)
+        input(:name => "url", :id => "url", :type => 'text', :value => 'url_to_mp3_or_zip_file', :size => 80)
         br
-        input(:name => 'licence', :id => 'licence', :type => 'text', :value => 'url to licence', :size => 80)
+        input(:name => 'licence', :id => 'licence', :type => 'text', :value => 'licence_uri', :size => 80)
         br
         span Rubedo.strings[:upload][:password]
         br

@@ -4,6 +4,7 @@
 require 'rubygems'
 require 'logger'
 require 'yaml'
+require 'fileutils'
 
 # extra
 $LOAD_PATH.unshift("lib", "lib/sqlite3")
