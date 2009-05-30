@@ -206,7 +206,7 @@ module Rubedo::Controllers
           l.media_type = 'audio'
           l.uploaded_at = Time.now
           l.save
-          redirect '/upload'
+          redirect '/'
         end
       else
         @error = Rubedo.strings[:upload][:bad_password]
