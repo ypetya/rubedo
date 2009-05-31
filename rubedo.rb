@@ -222,7 +222,7 @@ module Rubedo::Controllers
         song.votes += 1
         song.save
       end
-      if template == available
+      if template == 'available'
         @available = Song.available
       else
         @history = History.past
