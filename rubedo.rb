@@ -421,7 +421,7 @@ module Rubedo::Views
       p do
         input(:name => "url", :id => "url", :type => 'text', :value => 'url_to_mp3_or_zip_file', :size => 80)
         br
-        input(:name => 'licence', :id => 'licence', :type => 'text', :value => 'licence_uri', :size => 80)
+        input(:name => 'licence', :id => 'licence', :type => 'text', :value => 'license_uri', :size => 80)
         br
         span Rubedo.strings[:upload][:password]
         br
@@ -447,7 +447,7 @@ module Rubedo::Views
           text "&nbsp;"
           span.grey "#{time_ago(play.played_at)} "
           if play[:licence] and not play[:licence].empty?
-            a 'licence', :href => play[:licence]
+            a 'license', :href => play[:licence]
             a.delete :onclick => "vote_for_delete(#{play[:song_id]},'history'); return false;", :href => "#" do
               img :src => R(Public, "delete.gif")
             end
@@ -572,7 +572,7 @@ module Rubedo::Views
             text song[:title]
           end
           if song[:licence] and not song[:licence].empty?
-            a 'licence', :href => song[:licence]
+            a 'license', :href => song[:licence]
             a.delete :onclick => "vote_for_delete(#{song.id},'available'); return false;", :href => "#" do
               text song[:votes]
               img :src => R(Public, "delete.gif")
