@@ -24,7 +24,10 @@ TMP = '/tmp/download'
 MUSIC_FOLD = ARGV.size > 0 ? ARGV[0] : '/tmp/music'
 
 # {{{ My Helper functions
-
+begin
+FileUtils.rm_rf TMP
+rescue
+end
 [TMP, MUSIC_FOLD].each do |folder|
   FileUtils.mkdir_p(folder.to_s)
 end
@@ -178,8 +181,9 @@ locked_run do
 
   # 5. Remove garbage
 
+  Dir.chdir wd
+  
   FileUtils.rm_rf TMP
 
-  Dir.chdir wd
 end
 puts "finished."
