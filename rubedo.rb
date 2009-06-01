@@ -611,7 +611,7 @@ module Rubedo::Helpers
     end
     Dir["#{Rubedo::MUSIC_FOLDER}/**/*.{mp3,ogg}"].each do |filename|
       key = File.basename(filename)
-      found = songs[key] and songs[key].include?( get_parent_dir )]
+      found = songs[key] and songs[key].include?( get_parent_dir )
 
       unless found
         begin
