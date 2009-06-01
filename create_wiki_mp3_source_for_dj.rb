@@ -5,73 +5,63 @@
 # This simple script is managing wiki_to_wav, and creates new mp3-s until there is enough :) 
 
 require 'rubygems'
+require File.join(File.dirname(__FILE__), 'rubedo_helper.rb')
 
-# we need to ...
-KEEP_FILE_COUNT = 20
-# how to ...
-GENERATE_WAV = File.join(File.dirname(__FILE__),'wiki_to_wav.rb 3')
-# keep a safe loop count
-SAFETY_COUNTER = 4
+class CreateWiki
 
-# create directories
-%w{wav tmp mp3}.each do |ext|
-  system("mkdir /tmp/wiki_#{ext} -p")
-end
+  include RubedoHelper
 
-def rm file
-  system("rm '#{file}' -f")
-end
+  # {{{ constants
+  # we need to ...
+  KEEP_FILE_COUNT = 20
+  # how to ...
+  GENERATE_WAV = File.join(File.dirname(__FILE__),'wiki_to_wav.rb 3')
+  # keep a safe loop count
+  SAFETY_COUNTER = 4
+  # and use this file to lockourselves
+  LOCK = '~/.wiki.lock'
+  # }}}
 
-def encode_to_mp3 file_path
-  
-  # we encode to a temporary path not to broke the streaming
-  tmp_file1 = "#{file_path.gsub(/wav/){'tmp'}}.wav"
-  tmp_file2 = "#{file_path.gsub(/wav/){'tmp'}}.mp3"
-  title_file = "#{file_path}.title"
-  # converting
-  # ffmpeg: please do 2 channels and normal sample rate
-  system("ffmpeg -i '#{file_path}' -ac 2 -ar 44100 '#{tmp_file1}'")
-
-  title = File.read( title_file ).strip
-
-  # removeing title data... :)
-  rm title_file
-
-  # encoding
-  # lame: encode it to mp3
-  system("lame '#{tmp_file1}' '#{tmp_file2}' --quiet --tt \"#{title.gsub(/["]/){''}}\"")
-
-  rm tmp_file1
-
-  # and put the mp3 to the corret place
-  system("mv '#{tmp_file2}' '#{file_path.gsub(/wav/){'mp3'}}'")
-
-end
-
-# exit if keep_limit is ok
-
-# are there some wav garbage??
-Dir["/tmp/wiki_wav/*.wav"].each do |file|
-  
-  encode_to_mp3 file
-
-  rm file
-
-  print '+'
-end
-
-i = 0
-while((Dir["/tmp/wiki_mp3/*.mp3"].size < KEEP_FILE_COUNT) and i < SAFETY_COUNTER) do
-  system( GENERATE_WAV )
-  Dir["/tmp/wiki_wav/*.wav"].each do |file|
-    
-    encode_to_mp3 file
-    
-    rm file
-    
-    print '.'
+  # create directories
+  def initialize
+    %w{wav tmp mp3}.each do |ext|
+      system("mkdir /tmp/wiki_#{ext} -p")
+    end
   end
-  i += 1
+
+  def start
+    locked_run(LOCK, 10 * 60 ) do 
+      main_magic
+    end
+  end
+
+  def main_magic
+    # are there some wav garbage??
+    Dir["/tmp/wiki_wav/*.wav"].each do |file|
+      
+      encode_to_mp3 file
+
+      rm file
+
+      print '+'
+    end
+
+    i = 0
+    while((Dir["/tmp/wiki_mp3/*.mp3"].size < KEEP_FILE_COUNT) and i < SAFETY_COUNTER) do
+      system( GENERATE_WAV )
+      Dir["/tmp/wiki_wav/*.wav"].each do |file|
+        
+        encode_to_mp3 file
+        
+        rm file
+        
+        print '.'
+      end
+      i += 1
+    end
+
+    puts 'generate _ok'
+  end
 end
 
-puts 'generate _ok'
+CreateWiki.new.start if __FILE__ == $0

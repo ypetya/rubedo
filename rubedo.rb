@@ -129,7 +129,7 @@ module Rubedo::Controllers
   class Index < R '/'
     def get
       # scour songs every time someone visits the index
-      Rubedo::Helpers.scour_songs
+      # Rubedo::Helpers.scour_songs
 
       (@now_playing, @next_up) = [Play.now_playing, Play.next_up]
       @available = Song.available
