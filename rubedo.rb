@@ -596,7 +596,7 @@ module Rubedo::Views
 end
 
 module Rubedo::Helpers
-  def self get_parent_dir file
+  def self.get_parent_dir file
     File.expand_path(File.dirname(file)).match(/\/[^\/]+$/)[0]
   end
   # Find any songs in the music directory that Rubedo doesn't know about and add them to the table
