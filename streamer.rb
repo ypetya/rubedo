@@ -126,7 +126,7 @@ class Streamer
       dest_file = File.join(dest_dir, File.basename(file))
       FileUtils.move file, dest_file
       # 4. create it in the db and make licence info
-      @db.execute("insert into rubedo_songs (filename, title, play_count,licence,last_played_at) values(?,?,?,?,?)",dest_file,song_title(dest_file),0,licence,'2000')
+      @db.execute("insert into rubedo_songs (filename, title, play_count,licence,last_played_at) values(?,?,?,?,?)",dest_file,song_title(dest_file),0,licence,'0')
       puts "File added: #{file}"
     end
 

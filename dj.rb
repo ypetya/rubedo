@@ -177,7 +177,7 @@ class DJ
       song_id, licence = db.get_first_row( "select id, licence from rubedo_songs where filename = ? limit 1", path)
       if song_id
         count = db.get_first_value("select play_count from rubedo_songs where id = ?", song_id)
-        db.execute("update rubedo_songs set last_played_at = ?, play_count = ? WHERE id = ?", Time.now, count.to_i + 1, song_id)
+        db.execute("update rubedo_songs set last_played_at = ?, play_count = ? WHERE id = ?", Time.now.strftime('%s'), count.to_i + 1, song_id)
       end
       [0, path, song_title(path), song_id, licence]
     end
@@ -211,7 +211,7 @@ class DJ
     begin
       db.execute("update rubedo_plays set played_at = ?, queued_at = NULL WHERE id = ?", Time.now, play_id)
       count = db.get_first_value("select play_count from rubedo_songs where id = ?", song_id)
-      db.execute("update rubedo_songs set last_played_at = ?, play_count = ? WHERE id = ?", Time.now, count.to_i + 1, song_id)
+      db.execute("update rubedo_songs set last_played_at = ?, play_count = ? WHERE id = ?", Time.now.strftime('%s'), count.to_i + 1, song_id)
     rescue
       log.error "Error during marking a song as beginning.  Song ID: #{song_id}"
     end
