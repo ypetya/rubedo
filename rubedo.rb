@@ -596,15 +596,24 @@ module Rubedo::Views
 end
 
 module Rubedo::Helpers
+  def self get_parent_dir file
+    File.expand_path(File.dirname(file)).match(/\/[^\/]+$/)[0]
+  end
   # Find any songs in the music directory that Rubedo doesn't know about and add them to the table
   def self.scour_songs
     # Do one database query now and make a hash, to keep this function O(n)
+    # Tricky hash match: uniq song is by the file name and the dirname
     songs = Rubedo::Models::Song.find(:all).inject({}) do |files, song|
-      files[song.filename] = 1
+      key = File.basename( song.filename )
+      files[key] ||= []
+      files[key] << get_parent_dir(song.filename) 
       files
     end
     Dir["#{Rubedo::MUSIC_FOLDER}/**/*.{mp3,ogg}"].each do |filename|
-      unless songs[filename]
+      key = File.basename(filename)
+      found = songs[key] and songs[key].include?( get_parent_dir )]
+
+      unless found
         begin
           Rubedo::Models::Song.create(:title => song_title(filename), :filename => filename)
           puts "Added #{filename} to database."
