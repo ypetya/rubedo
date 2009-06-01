@@ -175,6 +175,10 @@ class DJ
       nil
     else
       song_id, licence = db.get_first_row( "select id, licence from rubedo_songs where filename = ? limit 1", path)
+      if song_id
+        count = db.get_first_value("select play_count from rubedo_songs where id = ?", song_id)
+        db.execute("update rubedo_songs set last_played_at = ?, play_count = ? WHERE id = ?", Time.now, count.to_i + 1, song_id)
+      end
       [0, path, song_title(path), song_id, licence]
     end
   end
