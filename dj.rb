@@ -127,7 +127,7 @@ class DJ
 
       log.info "Playing #{title}!" if log
       
-      handle_history( title + source, id, licence )
+      handle_history( title + source, song_id, licence )
 
       while data = file.read(16384)
         begin

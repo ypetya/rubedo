@@ -9,6 +9,7 @@ require 'rubygems'
 require 'sqlite3'
 require 'camping'
 require 'id3/id3'
+require 'net/http'
 
 Camping.goes :Rubedo
 
@@ -188,10 +189,20 @@ module Rubedo::Controllers
   class Upload < R '/upload'
     def get
       if Rubedo.config["upload_allow"] == true
+        @link_count = Link.count
         render :upload
       else
         redirect '/'
       end
+    end
+
+    def add_link url,licence
+      l = Link.new 
+      l.url = url
+      l.licence = licence
+      l.media_type = 'audio'
+      l.uploaded_at = Time.now
+      l.save
     end
 
     def post
@@ -200,18 +211,28 @@ module Rubedo::Controllers
           @error = Rubedo.strings[:upload][:no_file_selected]
           render :error
         else
-          l = Link.new 
-          l.url = @input.url
-          l.licence = @input.licence
-          l.media_type = 'audio'
-          l.uploaded_at = Time.now
-          l.save
+          if @input.url =~ /(m3u|pls|txt)/i
+            uri = URI.parse(@input.url)
+            http = Net::HTTP.new(uri.host,uri.port || 80)
+            http.open_timeout = 5
+            resp, data = http.get(uri.request_uri)
+            if resp.code == 200
+              data.gsub(Regexp.new(URI.regexp.source.sub(/^[^:]+:/, '(http|https):'), Regexp::EXTENDED, 'n')) do
+                add_link($&,@input.licence)
+              end
+            end
+          else
+            add_link(@input.url,@input.licence)
+          end
           redirect '/'
         end
       else
         @error = Rubedo.strings[:upload][:bad_password]
         render :error
       end
+    rescue Exception => e
+      @error = 'Error'
+      render :error
     end
   end
 
@@ -418,6 +439,9 @@ module Rubedo::Views
   def upload
     p Rubedo.strings[:upload][:message]
     form :action => "/upload", :method => 'post' do
+      p do
+        text "#{@link_count} links in queue."
+      end
       p do
         input(:name => "url", :id => "url", :type => 'text', :value => 'url_to_mp3_or_zip_file', :size => 80)
         br

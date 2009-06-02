@@ -18,7 +18,7 @@
 :unknow: Unknow
 :upload:
   :name: upload
-  :message: 'Welcome! Upload a song (format url for mp3 or zip). Licence required! Creative Commons only!'
+  :message: 'Welcome! Upload a song (format url for mp3 or zip, txt, pls, m3u with urls). License required! Creative Commons only!'
   :no_file_selected: No file.
   :already_uploaded: This file already exists.
   :bad_password: Bad Password.
