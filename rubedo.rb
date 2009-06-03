@@ -216,7 +216,7 @@ module Rubedo::Controllers
             http = Net::HTTP.new(uri.host,uri.port || 80)
             http.open_timeout = 5
             resp, data = http.get(uri.request_uri)
-            if resp.code == 200
+            if data and not data.empty?
               data.gsub(Regexp.new(URI.regexp.source.sub(/^[^:]+:/, '(http|https):'), Regexp::EXTENDED, 'n')) do
                 Link.add_link($&,@input.licence)
               end
