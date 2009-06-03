@@ -795,7 +795,7 @@ function poll() {
 
 function queue(id) {var res = new Ajax('/song/' + id, {update: 'queue', method: 'post'}).request();}
 function unqueue(id) {var res = new Ajax('/play/' + id + '/delete', {update: 'queue', method: 'post'}).request();}
-function vote_for_delete(id,upd) {var res = new Ajax('/vote/' + id + '/' + upd ,  {update: upd, method: 'post'} ).request();}
+function vote_for_delete(id,upd) {var res = new Ajax('/vote/' + id + '/' + upd ,  {method: 'post'} ).request();}
 
 
 function filter() {

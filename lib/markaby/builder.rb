@@ -229,7 +229,7 @@ module Markaby
     # set to <tt>text/html; charset=utf-8</tt>.
     def head(*args, &block)
       tag!(:head, *args) do
-        tag!(:meta, "http-equiv" => "Content-Type", "content" => "text/html; charset=utf-8") if @output_meta_tag
+        tag!(:meta, "http-equiv" => "Content-Type", "content" => "text/html; charset=ISO-8859-2") if @output_meta_tag
         instance_eval(&block)
       end
     end
