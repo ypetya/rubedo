@@ -71,6 +71,14 @@ module Rubedo::Models
   end
 
   class Link < Base
+    def self.add_link url,licence
+      l = Link.new 
+      l.url = url
+      l.licence = licence
+      l.media_type = 'audio'
+      l.uploaded_at = Time.now
+      l.save
+    end
   end
 
   class CreateTables < V 0.5
@@ -196,14 +204,6 @@ module Rubedo::Controllers
       end
     end
 
-    def add_link url,licence
-      l = Link.new 
-      l.url = url
-      l.licence = licence
-      l.media_type = 'audio'
-      l.uploaded_at = Time.now
-      l.save
-    end
 
     def post
       if Rubedo.config["upload_allow"] == true && @input.Password.to_s == Rubedo.config["upload_password"]
@@ -218,11 +218,11 @@ module Rubedo::Controllers
             resp, data = http.get(uri.request_uri)
             if resp.code == 200
               data.gsub(Regexp.new(URI.regexp.source.sub(/^[^:]+:/, '(http|https):'), Regexp::EXTENDED, 'n')) do
-                add_link($&,@input.licence)
+                Link.add_link($&,@input.licence)
               end
             end
           else
-            add_link(@input.url,@input.licence)
+            Link.add_link(@input.url,@input.licence)
           end
           redirect '/'
         end
