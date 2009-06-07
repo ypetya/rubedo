@@ -52,6 +52,12 @@ module RubedoHelper
     (100 - a.pop.to_i)
   end
 
+  def log_exception exc
+    puts exc.message
+    puts "Backtrace:"
+    exc.backtrace.each {|line| puts line }
+  end
+
   # 30 minutes for download
   def locked_run( lock_file, timeout = 30 * 60 )
     exit if File.exists?(lock_file)
@@ -62,6 +68,8 @@ module RubedoHelper
       end
     rescue Timeout::Error
       puts 'Too slow, sorry!!'
+    rescue Exception => exc
+      log_exception exc
     end
     %x{rm #{lock_file}}
   end

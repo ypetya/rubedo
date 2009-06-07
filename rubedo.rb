@@ -11,6 +11,9 @@ require 'camping'
 require 'id3/id3'
 require 'net/http'
 
+# plase no render utf-8 meta tag
+Markaby::Builder.set(:output_meta_tag, false)
+
 Camping.goes :Rubedo
 
 module Rubedo
@@ -357,6 +360,7 @@ module Rubedo::Views
   def layout
     html do
       head do
+        tag!(:meta, "http-equiv" => "Content-Type", "content" => "text/html; charset=utf-8")
         title Rubedo::RADIO_NAME
         link :href => "/rubedo.css", :rel => 'stylesheet', :type => 'text/css'
         text "<!--[if lte IE 7]>"
@@ -731,7 +735,7 @@ if __FILE__ == $0
   FileUtils.mkdir_p(Rubedo::LOG_FOLDER)
   FileUtils.mkdir_p(Rubedo::DB_FOLDER)
 
-  Rubedo::Models::Base.establish_connection :adapter  => "sqlite3", :database => File.join(Rubedo::DB_FOLDER, "rubedo.db"), :timeout => 200
+  Rubedo::Models::Base.establish_connection :adapter  => "sqlite3", :database => File.join(Rubedo::DB_FOLDER, "rubedo.db"), :timeout => 200#, :encoding => 'utf-8'
   Rubedo::Models::Base.logger = Logger.new(File.join(Rubedo::LOG_FOLDER, config["frontend_log_file"])) unless config["frontend_log_file"].blank?
 
   Rubedo.create
@@ -776,7 +780,7 @@ if __FILE__ == $0
   Process.kill("KILL", dj) if dj
 
 else  # if we are running  via passenger
-  Camping::Models::Base.establish_connection( :adapter => 'sqlite3', :database => 'db/rubedo.db')
+  Camping::Models::Base.establish_connection( :adapter => 'sqlite3', :database => 'db/rubedo.db', :encoding => 'utf-8' )
 end
 
 __END__
