@@ -60,6 +60,8 @@ module RubedoHelper
 
   # 30 minutes for download
   def locked_run( lock_file, timeout = 30 * 60 )
+    # bugfix for ~
+    lock_file = File.expand_path lock_file
     exit if File.exists?(lock_file)
     %x{touch #{lock_file}}
     begin
