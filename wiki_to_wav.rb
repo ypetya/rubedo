@@ -22,9 +22,6 @@ FILENAME = 'wikipedia.txt'
 #SPEAK_COMMAND = ARGV.size > 1 ? "espeak -p 78 -v #{ARGV[1]} -s 150 -a 99 -f": 'aoss espeak -p 78 -v hu+f2 -s 150 -a 99 -f'
 MAX_COUNTER = ARGV.size > 0 ? ARGV[0].to_i : 10
 
-SPEAK_COMMAND = "espeak -p 78 -v hu+f2 -s 150 -a 99 -w /tmp/wiki_wav/TMPFILENAME.wav -f"
-
-
 TABLAZAT_LIMIT = 800
 LISTA_LIMIT = 800
 
@@ -55,6 +52,19 @@ ROMAISZAMOK = {
   'XX' => 'huszadik',
   'XXI' => 'huszonegyedik'
 }
+
+P = (1..6).map{|x| x * 20 }
+V = ['hu+f1','hu+f2','hu+f3','hu+f4','hu+m1','hu+m2','hu+m3','hu+m4','hu+m5','hu+m6']
+S = (1..4).map{|x| 40 + x * 50 }
+
+def speak_command( p, v, s )
+  "aoss espeak -p #{p} -v #{v} -s #{s} -a 99 -w /tmp/wiki_wav/TMPFILENAME.wav -f"
+end
+
+def generate_voice uid
+  uid = uid.sum
+  speak_command( P[uid % P.length], V[uid % V.length], S[uid % S.length])
+end
 
 # kill everything from text, we wont hear
 def sanitize text
@@ -193,7 +203,7 @@ end
 
 def generate_filename title
   file_name = title.gsub(/[^a-zA-Z0-9]/){''}
-  ret = SPEAK_COMMAND.gsub(/TMPFILENAME/) do
+  ret = generate_voice(@@category).gsub(/TMPFILENAME/) do
     file_name
 	end
 
@@ -237,7 +247,8 @@ while i > 0
   File.open("#{DIR}/#{FILENAME}",'w') do |f|
     #Kategória
     if cat = (oldal/"#bodyContent/div#catlinks")
-      to_say f, cat.inner_text.gsub(/Kategóriák:|Kategória:/,'') + "\n"
+      @@category = cat.inner_text.gsub(/Kategóriák:|Kategória:/,'') 
+      to_say f, @@category + "\n"
     end
     #title
     puts "Cikk##{i} - link : #{oldal.uri.to_s}"
