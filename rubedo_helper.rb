@@ -60,32 +60,54 @@ module RubedoHelper
 
   # 30 minutes for download
   def locked_run( lock_file, timeout = 30 * 60 )
-    # bugfix for ~
-    lock_file = File.expand_path lock_file
-    exit if File.exists?(lock_file)
-    %x{touch #{lock_file}}
-    begin
-      Timeout::timeout(timeout) do
-        yield
+    cached_filesystem do
+      # bugfix for ~
+      lock_file = File.expand_path lock_file
+      exit if File.exists?(lock_file)
+      %x{touch #{lock_file}}
+      begin
+        Timeout::timeout(timeout) do
+          yield
+        end
+      rescue Timeout::Error
+        puts 'Too slow, sorry!!'
+      rescue Exception => exc
+        log_exception exc
       end
-    rescue Timeout::Error
-      puts 'Too slow, sorry!!'
-    rescue Exception => exc
-      log_exception exc
+      rm lock_file
     end
-    %x{rm #{lock_file}}
   end
 
   def rm filename
     FileUtils.rm(filename) if File.exists?(filename)
   end
 
+  def init_file_cache
+    @file_cache = []
+  end
+
+  def dispose_file_cache
+    @file_cache.each{|file| rm file}
+  end
+
+  def cached_filesystem
+    init_file_cache
+    yield
+    dispose_file_cache
+  end
+
   def encode_to_mp3 file_path
     
     # we encode to a temporary path not to broke the streaming
     tmp_file1 = "#{file_path.gsub(/wav/){'tmp'}}.wav"
+    @file_cache << tmp_file1
+
     tmp_file2 = "#{file_path.gsub(/wav/){'tmp'}}.mp3"
+    @file_cache << tmp_file2
+
     title_file = "#{file_path}.title"
+    @file_cache << title_file
+
     # converting
     # ffmpeg: please do 2 channels and normal sample rate
     system("ffmpeg -i '#{file_path}' -ac 2 -ar 44100 '#{tmp_file1}'")

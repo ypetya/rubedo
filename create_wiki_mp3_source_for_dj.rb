@@ -38,6 +38,7 @@ class CreateWiki
   def main_magic
     # are there some wav garbage??
     Dir["/tmp/wiki_wav/*.wav"].each do |file|
+      @file_cache << file
       
       encode_to_mp3 file
 
@@ -50,7 +51,8 @@ class CreateWiki
     while((Dir["/tmp/wiki_mp3/*.mp3"].size < KEEP_FILE_COUNT) and i < SAFETY_COUNTER) do
       system( GENERATE_WAV )
       Dir["/tmp/wiki_wav/*.wav"].each do |file|
-        
+        @file_cache << file
+
         encode_to_mp3 file
         
         rm file
@@ -60,7 +62,7 @@ class CreateWiki
       i += 1
     end
 
-    puts 'generate _ok'
+    puts 'generate_ok'
   end
 end
 
