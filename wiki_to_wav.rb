@@ -19,7 +19,6 @@ PAGE = nil #ARGV.size > 0 ? ARGV[0] : nil
 DIR = "/tmp"
 FILENAME = 'wikipedia.txt'
 
-#SPEAK_COMMAND = ARGV.size > 1 ? "espeak -p 78 -v #{ARGV[1]} -s 150 -a 99 -f": 'aoss espeak -p 78 -v hu+f2 -s 150 -a 99 -f'
 MAX_COUNTER = ARGV.size > 0 ? ARGV[0].to_i : 10
 
 TABLAZAT_LIMIT = 800
@@ -58,7 +57,7 @@ V = ['hu+f1','hu+f2','hu+f3','hu+f4','hu+m1','hu+m2','hu+m3','hu+m4','hu+m5','hu
 S = (1..4).map{|x| 40 + x * 50 }
 
 def speak_command( p, v, s )
-  "aoss espeak -p #{p} -v #{v} -s #{s} -a 99 -w /tmp/wiki_wav/TMPFILENAME.wav -f"
+  "espeak -p #{p} -v #{v} -s #{s} -a 99 -w /tmp/wiki_wav/TMPFILENAME.wav -f"
 end
 
 def generate_voice uid
