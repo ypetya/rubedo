@@ -149,8 +149,9 @@ class DJ
       @wiki_played = 0
     end
     wiki = Dir["/tmp/wiki_mp3/**/*.{mp3,ogg}"]
-    songs = Dir["#{music_folder}/**/*.{mp3,ogg}"]
-
+    #plz random songs < 30M ! thx
+    songs = Dir["#{music_folder}/**/*.{mp3,ogg}"].select{|file| File.size(file) < 30000000}
+    
     if not wiki.empty? and ( @last_played != :wiki or @wiki_played < @config['dj']['wiki_play_max'])
       @wiki_played = 0 unless @last_played == :wiki 
       @last_played = :wiki
