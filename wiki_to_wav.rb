@@ -3,7 +3,18 @@
 # Kiss Péter - ypetya@gmail.com
 #
 # This simple script gets random wikipedia page and starts espeak to read it
-
+#
+# Extra features:
+# 
+# (some artistic solutions to get intresting data in human form)
+#
+# 1. random voice from category names
+# trying to ...
+# 2. cut abuse and uninteresting data like too large tables and catalogues
+# 3. generate associative pages as output
+# 4. humanize expressions and metrics data
+# 5. use intersting factors in category names ...
+#
 # unicode
 $KCODE = 'u'
 require 'jcode'
@@ -65,6 +76,74 @@ def generate_voice uid
   speak_command( P[uid % P.length], V[uid % V.length], S[uid % S.length])
 end
 
+CATEGORY_OFFSET = 20
+# regex, and interesting factor in percents
+CATEGORY_FACTORS = {
+# --- nem érdekes :(
+  # Főkat
+  /település/iu => 25,
+  /község/iu => 40,
+  /megye/iu => 40,
+  /város/iu => 60,
+  # wiki alap
+  /list[aá]/iu => 40,
+  /egyértelműsítő/iu => 40,
+  # művek
+  /középfölde/iu => 25,
+  /csillagok háborúja/iu => 25,
+  /formula–1/iu => 30,
+  # sport
+  /sport/iu => 40,
+  /sportélet/iu => 60,
+  /labdarúg/iu => 30,
+  /kézilabda/iu => 30,
+  # zene
+  /nagylemez/iu => 60,
+  /albumok/iu => 60,
+  /együttes/iu => 65,
+  /zene/iu => 60,
+  # film
+  /filmes listák/iu => 25,
+  /film/iu => 50,
+  # töri - idő
+  /század/iu => 60,
+  /évszázad/iu => 35,
+  /évtized/iu => 35,
+  /Az év napjai/iu => 75,
+  /történel/iu => 50,
+  /ókor/iu => 75,
+  # vallás
+  /püspök/iu => 70,
+  /érsek/iu => 70,
+  /egyház/iu => 70,
+# --- érdekes ! :)
+  /csillag/iu => 140,
+  /fizik/iu => 130,
+  /matematik/iu => 130,
+  /pszich/iu => 130,
+  /társadal/iu => 120,
+  /tudomány/iu => 140,
+  /informatika/iu => 120,
+}
+#
+
+def interesting? in_category
+  fact = 1.to_f
+  CATEGORY_FACTORS.keys.each do |regex|
+    fact = fact * (CATEGORY_FACTORS[regex].to_f / 100) if in_category =~ regex
+  end
+
+  r = rand
+  fact = fact - ( CATEGORY_OFFSET.to_f / 100 )
+  if r < fact
+    puts "interesting: #{in_category} (#{r}<#{fact})"
+    return true
+  else
+    puts "not interesting: #{in_category} (#{r}<#{fact})"
+    return false
+  end
+end
+
 # kill everything from text, we wont hear
 def sanitize text
   SANITIZE_THIS.each { |s|  text = text.gsub(/#{s}/,'') }
@@ -87,11 +166,10 @@ def sanitize text
   text = text.gsub(/(\W\d+)\s(\d{3})/) { $1 + $2 }
 
   #idegesített az isbn
-  text = text.gsub(/(ISBN)\s*([0-9\-]+)$/) { 'iesbéen ' + $2.split('').join(' ') }
+  text = text.gsub(/(ISBN)\s*([0-9\-]+)$/i) { 'iesbéen ' + $2.split('').join(' ') }
 
   # ie isz kr e kr u
-
-  text = text.gsub(/(i\.{0,1}\s{0,1}sz\.{0,1})\s{0,1}(\d)/){ ' időszámításunk szerint ' + $2 }
+  text = text.gsub(/(i\.{0,1}\s{0,1}sz\.{0,1})\s{0,1}(\d)/i){ ' időszámításunk szerint ' + $2 }
   text = text.gsub(/([kK]r\.{0,1}\s{0,1}sz\.{0,1})\s{0,1}(\d)/){ ' Krisztus szerint ' + $2 }
   text = text.gsub(/([kK]r\.{0,1}\s{0,1}u\.{0,1})\s{0,1}(\d)/){ ' Krisztus után ' + $2 }
   text = text.gsub(/(i\.{0,1}\s{0,1}e\.{0,1})\s{0,1}(\d)/){ ' időszámításunk előtt ' + $2 }
@@ -100,26 +178,27 @@ def sanitize text
   # kis mértékegység hekk
   text = text.gsub(/\Wkm\/h\W/,' km per óra ')
   text = text.gsub(/\WkW\W/,' kilo watt ')
-  text = text.gsub(/\Wkg\W/,' kilo gramm ')
+  text = text.gsub(/\Wkg\W/i,' kilo gramm ')
   text = text.gsub(/(\d+)\W+m\W/) { $1 + ' méter '}
   text = text.gsub(/°/,' fok')
-  text = text.gsub(/[&]/,' és ')
+  text = text.gsub(/[&]i/,' és ')
   # négyzet - sokszor előfordul földrajzban
-  text = text.gsub(/km\W{0,1}²/){ ' négyzet km ' }
+  text = text.gsub(/km\W{0,1}²/i){ ' négyzet km ' }
   # négyzet - matekban változó után jön. :/, mértékegységeknél előtte, mértékegységeket ki kéne szedni tömbbe
   text = text.gsub(/²/){ ' négyzet ' }
-  text = text.gsub(/\+\/\-/,'plussz minusz')
+  text = text.gsub(/\+\/\-/,' plussz minusz ')
+  text = text.gsub(/×/,' szor ')
 
-  # deokosvagyok rövidítésekű
-  text = text.gsub(/\sstb\.\s/, ' satöbbi ')
-  text = text.gsub(/\sun\.\s/, ' úgy nevezett ')
+  # deokosvagyok rövidítésekbű
+  text = text.gsub(/\sstb\.\s/i, ' satöbbi ')
+  text = text.gsub(/\sun\.\s/i, ' úgy nevezett ')
   text
 end
 
 def to_say f, text
   text = sanitize( text )
   f.puts text + ' '
-  puts text
+  #puts text
 end
 
 def parse_node f, node, depth=0
@@ -239,16 +318,17 @@ while i > 0
   else
     oldal = agent.get PAGE
   end
-  #grab images :)
-  #hunt_for_wiki_image_in oldal.links,agent
-  
+
+  if cat = (oldal/"#bodyContent/div#catlinks")
+    @@category = cat.inner_text.gsub(/Kategóriák:|Kategória:/,'') 
+    # this is the interesting check trick :)
+    next unless interesting?( @@category )
+  end
+
 	#write to file and parse content
   File.open("#{DIR}/#{FILENAME}",'w') do |f|
     #Kategória
-    if cat = (oldal/"#bodyContent/div#catlinks")
-      @@category = cat.inner_text.gsub(/Kategóriák:|Kategória:/,'') 
-      to_say f, @@category + "\n"
-    end
+    to_say( f, @@category + "\n" ) if @@category 
     #title
     puts "Cikk##{i} - link : #{oldal.uri.to_s}"
     to_say( f, oldal.title )
