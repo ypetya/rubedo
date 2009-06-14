@@ -98,7 +98,7 @@ CATEGORY_FACTORS = {
   /labdarúg/iu => 30,
   /kézilabda/iu => 30,
   # zene
-  /nagylemez/iu => 60,
+  /(nagy|kis)lemez/iu => 60,
   /albumok/iu => 60,
   /együttes/iu => 65,
   /zene/iu => 60,
