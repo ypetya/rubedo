@@ -80,11 +80,13 @@ CATEGORY_OFFSET = 20
 # regex, and interesting factor in percents
 CATEGORY_FACTORS = {
 # --- nem érdekes :(
-  # Főkat
+  # Föci
   /település/iu => 25,
   /község/iu => 40,
   /megye/iu => 40,
   /város/iu => 60,
+  /tartomány/iu => 60,
+  /körzet/iu => 60,
   # wiki alap
   /list[aá]/iu => 40,
   /egyértelműsítő/iu => 40,
@@ -124,6 +126,7 @@ CATEGORY_FACTORS = {
   /társadal/iu => 120,
   /tudomány/iu => 140,
   /informatika/iu => 120,
+  /szoftver/iu => 130,
 }
 #
 
