@@ -96,6 +96,7 @@ CATEGORY_FACTORS = {
   /formula–1/iu => 30,
   # sport
   /sport/iu => 40,
+  /olimpia/iu => 60,
   /sportélet/iu => 60,
   /labdarúg/iu => 30,
   /kézilabda/iu => 30,
