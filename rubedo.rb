@@ -1,5 +1,6 @@
 #!/usr/local/bin/ruby
 
+load '/etc/my_ruby_scripts/settings.rb'
 
 $LOAD_PATH.unshift("lib", "lib/sqlite3")
 
@@ -10,6 +11,7 @@ require 'sqlite3'
 require 'camping'
 require 'id3/id3'
 require 'net/http'
+require 'twitter'
 
 # plase no render utf-8 meta tag
 Markaby::Builder.set(:output_meta_tag, false)
@@ -71,6 +73,12 @@ module Rubedo::Models
   class Comment < Base
     def self.get_list; Comment.find( :all, :order => 'created_at desc', :limit => 30); end
     def self.get_first; Comment.find( :first, :order => 'created_at desc'); end
+
+    def self.update_twitter status
+      client = Twitter::HTTPAuth.new( @@settings[:rubedo_twitter].first, @@settings[:rubedo_twitter].last, :ssl => true )
+      base = Twitter::Base.new(client)
+      base.update status
+    end
   end
 
   class Link < Base
@@ -189,6 +197,9 @@ module Rubedo::Controllers
         c.text = tex 
         c.email = @input.email
         c.save!
+
+        status_msg = ( c.name.empty? ? c.text : "@#{c.name} - #{c.text}" )
+        Comment.update_twitter( status_msg )
       end
 
       @comments = Comment.get_list
